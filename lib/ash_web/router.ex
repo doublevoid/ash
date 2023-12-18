@@ -68,6 +68,12 @@ defmodule AshWeb.Router do
       on_mount: [{AshWeb.UserAuth, :ensure_authenticated}] do
       live "/users/settings", UserSettingsLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
+
+      live "/communities/new", CommunityLive.Index, :new
+      live "/communities/:id/edit", CommunityLive.Index, :edit
+
+      live "/communities/:id/show/edit", CommunityLive.Show, :edit
+      live "/communities/:id", CommunityLive.Show, :show
     end
   end
 
@@ -80,6 +86,7 @@ defmodule AshWeb.Router do
       on_mount: [{AshWeb.UserAuth, :mount_current_user}] do
       live "/users/confirm/:token", UserConfirmationLive, :edit
       live "/users/confirm", UserConfirmationInstructionsLive, :new
+      live "/communities", CommunityLive.Index, :index
     end
   end
 end

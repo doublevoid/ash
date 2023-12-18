@@ -1,0 +1,47 @@
+<.header>
+  Listing Communities
+  <:actions>
+    <.link patch={~p"/communities/new"}>
+      <.button>New Community</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table
+  id="communities"
+  rows={@streams.communities}
+  row_click={fn {_id, community} -> JS.navigate(~p"/communities/#{community}") end}
+>
+  <:col :let={{_id, community}} label="Name"><%= community.name %></:col>
+  <:col :let={{_id, community}} label="Description"><%= community.description %></:col>
+  <:action :let={{_id, community}}>
+    <div class="sr-only">
+      <.link navigate={~p"/communities/#{community}"}>Show</.link>
+    </div>
+    <.link patch={~p"/communities/#{community}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={{id, community}}>
+    <.link
+      phx-click={JS.push("delete", value: %{id: community.id}) |> hide("##{id}")}
+      data-confirm="Are you sure?"
+    >
+      Delete
+    </.link>
+  </:action>
+</.table>
+
+<.modal
+  :if={@live_action in [:new, :edit]}
+  id="community-modal"
+  show
+  on_cancel={JS.patch(~p"/communities")}
+>
+  <.live_component
+    module={AshWeb.CommunityLive.FormComponent}
+    id={@community.id || :new}
+    title={@page_title}
+    action={@live_action}
+    community={@community}
+    patch={~p"/communities"}
+  />
+</.modal>
