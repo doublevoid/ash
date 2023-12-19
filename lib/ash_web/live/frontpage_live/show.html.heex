@@ -1,3 +1,7 @@
-<div>
-  Surely a render
-</div>
+<section class="my-4">
+  <.live_component
+    module={AshWeb.FrontpageLive.MainComponent}
+    id="main-component"
+    posts={@streams.posts}
+  />
+</section>

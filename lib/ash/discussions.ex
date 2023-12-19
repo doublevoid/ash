@@ -21,6 +21,15 @@ defmodule Ash.Discussions do
     Repo.all(Post)
   end
 
+  def posts_timeline(offset, limit) do
+    Repo.all(
+      from(p in Post,
+        offset: ^offset,
+        limit: ^limit
+      )
+    )
+  end
+
   @doc """
   Gets a single post.
 
