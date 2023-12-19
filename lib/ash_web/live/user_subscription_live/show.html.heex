@@ -1,0 +1,25 @@
+<.header>
+  User subscription <%= @user_subscription.id %>
+  <:subtitle>This is a user_subscription record from your database.</:subtitle>
+  <:actions>
+    <.link patch={~p"/user_subscriptions/#{@user_subscription}/show/edit"} phx-click={JS.push_focus()}>
+      <.button>Edit user_subscription</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.list>
+</.list>
+
+<.back navigate={~p"/user_subscriptions"}>Back to user_subscriptions</.back>
+
+<.modal :if={@live_action == :edit} id="user_subscription-modal" show on_cancel={JS.patch(~p"/user_subscriptions/#{@user_subscription}")}>
+  <.live_component
+    module={AshWeb.UserSubscriptionLive.FormComponent}
+    id={@user_subscription.id}
+    title={@page_title}
+    action={@live_action}
+    user_subscription={@user_subscription}
+    patch={~p"/user_subscriptions/#{@user_subscription}"}
+  />
+</.modal>
