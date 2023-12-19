@@ -19,8 +19,6 @@ defmodule AshWeb.Router do
 
   scope "/", AshWeb do
     pipe_through :browser
-
-    get "/", PageController, :home
   end
 
   # Other scopes may use custom stacks.
@@ -87,6 +85,7 @@ defmodule AshWeb.Router do
       live "/users/confirm/:token", UserConfirmationLive, :edit
       live "/users/confirm", UserConfirmationInstructionsLive, :new
       live "/communities", CommunityLive.Index, :index
+      live "/", FrontpageLive.Show, :show
     end
   end
 end

@@ -29,7 +29,12 @@
   </:action>
 </.table>
 
-<.modal :if={@live_action in [:new, :edit]} id="comment-modal" show on_cancel={JS.patch(~p"/comments")}>
+<.modal
+  :if={@live_action in [:new, :edit]}
+  id="comment-modal"
+  show
+  on_cancel={JS.patch(~p"/comments")}
+>
   <.live_component
     module={AshWeb.CommentLive.FormComponent}
     id={@comment.id || :new}
