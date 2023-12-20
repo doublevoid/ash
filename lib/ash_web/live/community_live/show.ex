@@ -24,7 +24,7 @@ defmodule AshWeb.CommunityLive.Show do
     community = Communities.get_community_by_name!(name)
 
     socket
-    |> assign(:page_title, page_title(socket.assigns.live_action))
+    |> assign(:page_title, page_title(socket.assigns.live_action, community))
     |> assign(:community, community)
     |> stream(:posts, Discussions.posts_timeline_by_community(0, 25, community.name))
     |> assign(:offset, 0)
@@ -47,6 +47,5 @@ defmodule AshWeb.CommunityLive.Show do
     Discussions.posts_timeline_by_community(offset, limit, socket.assigns.community.name)
   end
 
-  defp page_title(:show), do: "Show Community"
-  defp page_title(:edit), do: "Edit Community"
+  defp page_title(:show, community), do: "/c/#{community.name}"
 end
