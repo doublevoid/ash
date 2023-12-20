@@ -17,7 +17,7 @@ defmodule AshWeb.Components.TimelineComponent do
             module={VoteComponent}
             id={"vote-post-#{post.id}"}
             current_user={@current_user}
-            post={post}
+            voteable={post}
           />
           <PostComponent.post post={post} />
           <div class="mb-4" />
