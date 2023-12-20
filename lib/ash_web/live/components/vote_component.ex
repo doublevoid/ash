@@ -1,4 +1,5 @@
 defmodule AshWeb.Components.VoteComponent do
+  alias Ash.Votes.PostVote
   alias Ash.Votes
   use AshWeb, :live_component
   require IEx
@@ -17,14 +18,14 @@ defmodule AshWeb.Components.VoteComponent do
         <div phx-click="upvote" phx-value-id={@post.id} phx-value-type="post" phx-target={@myself}>
           <.icon
             name="hero-arrow-up-circle"
-            class={"ml-1 w-3 h-3 #{if Enum.any?(@post.votes, fn x -> x.value > 0 end), do: "bg-blue-600", else: "yeah"}"}
+            class={"ml-1 w-3 h-3 #{if Enum.any?(@post.votes, fn x -> x && x.value > 0 end), do: "bg-blue-600", else: "yeah"}"}
           />
         </div>
 
         <div phx-click="downvote" phx-value-id={@post.id} phx-value-type="post" phx-target={@myself}>
           <.icon
             name="hero-arrow-down-circle"
-            class={"ml-1 w-3 h-3 #{if Enum.any?(@post.votes, fn x -> x.value < 0 end), do: "bg-red-600", else: "yeah"}"}
+            class={"ml-1 w-3 h-3 #{if Enum.any?(@post.votes, fn x -> x && x.value < 0 end), do: "bg-red-600", else: "yeah"}"}
           />
         </div>
       </div>
@@ -34,8 +35,24 @@ defmodule AshWeb.Components.VoteComponent do
 
   @impl true
   def handle_event("upvote", %{"id" => id, "type" => "post"}, socket) do
-    {_, post_vote} =
-      Votes.upsert_post_vote(%{post_id: id, user_id: socket.assigns.current_user.id, value: 1})
+    vote = Enum.at(socket.assigns.post.votes, 0)
+
+    post_vote =
+      case vote do
+        %PostVote{value: 1} ->
+          Votes.delete_post_vote(vote)
+          nil
+
+        _ ->
+          {_, post_vote} =
+            Votes.upsert_post_vote(%{
+              post_id: id,
+              user_id: socket.assigns.current_user.id,
+              value: 1
+            })
+
+          post_vote
+      end
 
     {:noreply,
      socket
