@@ -13,7 +13,7 @@ defmodule Ash.VotesFixtures do
       |> Enum.into(%{
         value: 42
       })
-      |> Ash.Votes.create_post_vote()
+      |> Ash.Votes.upsert_post_vote()
 
     post_vote
   end
