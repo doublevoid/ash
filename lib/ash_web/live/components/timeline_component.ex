@@ -1,5 +1,6 @@
 defmodule AshWeb.Components.TimelineComponent do
   alias AshWeb.Components.PostComponent
+  alias AshWeb.Components.VoteComponent
   use AshWeb, :live_component
 
   def render(assigns) do
@@ -12,6 +13,7 @@ defmodule AshWeb.Components.TimelineComponent do
         phx-viewport-bottom="load-more"
       >
         <%= for {_key, post} <- @posts do %>
+          <VoteComponent.vote />
           <PostComponent.post post={post} />
           <div class="mb-4" />
         <% end %>
