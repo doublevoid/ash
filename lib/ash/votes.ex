@@ -49,10 +49,13 @@ defmodule Ash.Votes do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_post_vote(attrs \\ %{}) do
+  def upsert_post_vote(attrs \\ %{}) do
     %PostVote{}
     |> PostVote.changeset(attrs)
-    |> Repo.insert()
+    |> Repo.insert(
+      on_conflict: [set: [value: attrs[:value]]],
+      conflict_target: [:post_id, :user_id]
+    )
   end
 
   @doc """

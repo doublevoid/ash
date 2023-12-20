@@ -13,12 +13,16 @@ defmodule AshWeb.Components.TimelineComponent do
         phx-viewport-bottom="load-more"
       >
         <%= for {_key, post} <- @posts do %>
-          <VoteComponent.vote />
+          <.live_component
+            module={VoteComponent}
+            id={"vote-post-#{post.id}"}
+            current_user={@current_user}
+            post={post}
+          />
           <PostComponent.post post={post} />
           <div class="mb-4" />
         <% end %>
       </div>
-      <div id="main-component-marker" phx-hook="InfiniteScroll" />
     </div>
     """
   end

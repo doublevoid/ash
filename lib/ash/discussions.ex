@@ -4,6 +4,8 @@ defmodule Ash.Discussions do
   """
 
   import Ecto.Query, warn: false
+  alias Ash.Votes.PostVote
+  alias Ash.Accounts.User
   alias Ash.Communities.Community
   alias Ash.Repo
 
@@ -22,26 +24,39 @@ defmodule Ash.Discussions do
     Repo.all(Post)
   end
 
-  def posts_timeline(offset, limit, community_name \\ nil) do
+  def posts_timeline(offset, limit, community_name \\ nil, user \\ nil) do
     query =
       from(p in Post,
+        join: c in assoc(p, :community),
+        join: u in assoc(p, :user),
+        preload: [community: c, user: u],
         offset: ^offset,
         limit: ^limit,
         order_by: :id
       )
-      |> maybe_join_community(community_name)
+      |> maybe_filter_community(community_name)
+      |> maybe_join_votes(user)
 
     Repo.all(query)
-    |> Repo.preload([:user, :community])
   end
 
-  defp maybe_join_community(query, nil), do: query
+  defp maybe_filter_community(query, nil), do: query
 
-  defp maybe_join_community(query, community_name) do
-    from([p, ...] in query,
-      join: c in Community,
-      on: c.id == p.community_id,
+  defp maybe_filter_community(query, community_name) do
+    from([p, c] in query,
       where: c.name == ^community_name
+    )
+  end
+
+  defp maybe_join_votes(query, nil), do: query
+
+  defp maybe_join_votes(query, %User{} = user) do
+    from([p, ...] in query,
+      left_join: v in PostVote,
+      on: v.post_id == p.id,
+      where: v.user_id == ^user.id,
+      or_where: is_nil(v.user_id),
+      preload: [votes: v]
     )
   end
 

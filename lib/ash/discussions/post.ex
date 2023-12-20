@@ -8,6 +8,7 @@ defmodule Ash.Discussions.Post do
     field :body, :string
     belongs_to :community, Ash.Communities.Community
     belongs_to :user, Ash.Accounts.User
+    has_many :votes, Ash.Votes.PostVote
 
     timestamps(type: :utc_datetime)
   end

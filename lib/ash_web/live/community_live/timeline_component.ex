@@ -16,7 +16,6 @@ defmodule AshWeb.CommunityLive.TimelineComponent do
           <div class="mb-4" />
         <% end %>
       </div>
-      <div id="main-component-marker" phx-hook="InfiniteScroll" />
     </div>
     """
   end

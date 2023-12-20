@@ -7,7 +7,10 @@ defmodule AshWeb.FrontpageLive.Show do
   def mount(_params, _session, socket) do
     {:ok,
      socket
-     |> stream(:posts, Discussions.posts_timeline(0, 25))
+     |> stream(
+       :posts,
+       Discussions.posts_timeline(0, 25, nil, socket.assigns.current_user)
+     )
      |> assign(:offset, 0)
      |> assign(:limit, 25)}
   end
@@ -25,6 +28,6 @@ defmodule AshWeb.FrontpageLive.Show do
   defp stream_new_posts(socket) do
     offset = socket.assigns.offset
     limit = socket.assigns.limit
-    Discussions.posts_timeline(offset, limit)
+    Discussions.posts_timeline(offset, limit, nil, socket.assigns.current_user)
   end
 end
