@@ -27,42 +27,44 @@ defmodule AshWeb.Components.VoteComponent do
   end
 
   @impl true
-  def handle_event("upvote", %{"id" => id, "type" => "post"}, socket) do
+  def handle_event("upvote", %{"id" => _id, "type" => "post"}, socket) do
+    {:noreply,
+     socket
+     |> assign(post: handle_vote(socket, 1))}
+  end
+
+  @impl true
+  def handle_event("downvote", %{"id" => _id, "type" => "post"}, socket) do
+    {:noreply,
+     socket
+     |> assign(post: handle_vote(socket, -1))}
+  end
+
+  defp update_post_vote(post, post_vote) do
+    %{post | votes: [post_vote]}
+  end
+
+  defp handle_vote(socket, value) do
     vote = Enum.at(socket.assigns.post.votes, 0)
+    post = socket.assigns.post
 
     post_vote =
       case vote do
-        %PostVote{value: 1} ->
+        %PostVote{value: ^value} ->
           Votes.delete_post_vote(vote)
           nil
 
         _ ->
           {_, post_vote} =
             Votes.upsert_post_vote(%{
-              post_id: id,
+              post_id: post.id,
               user_id: socket.assigns.current_user.id,
-              value: 1
+              value: value
             })
 
           post_vote
       end
 
-    {:noreply,
-     socket
-     |> assign(post: update_post_vote(socket.assigns.post, post_vote))}
-  end
-
-  @impl true
-  def handle_event("downvote", %{"id" => id, "type" => "post"}, socket) do
-    {_, post_vote} =
-      Votes.upsert_post_vote(%{post_id: id, user_id: socket.assigns.current_user.id, value: -1})
-
-    {:noreply,
-     socket
-     |> assign(post: update_post_vote(socket.assigns.post, post_vote))}
-  end
-
-  defp update_post_vote(post, post_vote) do
-    %{post | votes: [post_vote]}
+    update_post_vote(post, post_vote)
   end
 end
