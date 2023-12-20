@@ -6,7 +6,7 @@ defmodule Ash.Votes.PostVote do
     field :value, :integer
 
     belongs_to :post, Ash.Discussions.Post
-    belongs_to :user, Ash.Discussions.User
+    belongs_to :user, Ash.Accounts.User
 
     timestamps(type: :utc_datetime)
   end
