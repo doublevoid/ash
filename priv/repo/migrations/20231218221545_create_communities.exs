@@ -8,5 +8,7 @@ defmodule Ash.Repo.Migrations.CreateCommunities do
 
       timestamps(type: :utc_datetime)
     end
+
+    create index(:communities, [:name])
   end
 end
