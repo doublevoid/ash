@@ -2,7 +2,7 @@
   Community <%= @community.id %>
   <:subtitle>This is a community record from your database.</:subtitle>
   <:actions>
-    <.link patch={~p"/communities/#{@community}/show/edit"} phx-click={JS.push_focus()}>
+    <.link patch={~p"/c/#{@community.name}/show/edit"} phx-click={JS.push_focus()}>
       <.button>Edit community</.button>
     </.link>
   </:actions>
@@ -13,15 +13,28 @@
   <:item title="Description"><%= @community.description %></:item>
 </.list>
 
-<.back navigate={~p"/communities"}>Back to communities</.back>
-
-<.modal :if={@live_action == :edit} id="community-modal" show on_cancel={JS.patch(~p"/communities/#{@community}")}>
+<.modal
+  :if={@live_action == :edit}
+  id="community-modal"
+  show
+  on_cancel={JS.patch(~p"/c/#{@community.name}")}
+>
   <.live_component
     module={AshWeb.CommunityLive.FormComponent}
     id={@community.id}
     title={@page_title}
     action={@live_action}
     community={@community}
-    patch={~p"/communities/#{@community}"}
+    patch={~p"/c/#{@community}"}
   />
 </.modal>
+
+<%= if @live_action == :show do %>
+  <section class="my-4">
+    <.live_component
+      module={AshWeb.CommunityLive.TimelineComponent}
+      id="main-component"
+      posts={@streams.posts}
+    />
+  </section>
+<% end %>

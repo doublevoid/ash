@@ -37,6 +37,8 @@ defmodule Ash.Communities do
   """
   def get_community!(id), do: Repo.get!(Community, id)
 
+  def get_community_by_name!(name), do: Repo.get_by!(Community, name: name)
+
   @doc """
   Creates a community.
 

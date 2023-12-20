@@ -4,6 +4,7 @@ defmodule Ash.Discussions do
   """
 
   import Ecto.Query, warn: false
+  alias Ash.Communities.Community
   alias Ash.Repo
 
   alias Ash.Discussions.Post
@@ -25,9 +26,25 @@ defmodule Ash.Discussions do
     Repo.all(
       from(p in Post,
         offset: ^offset,
-        limit: ^limit
+        limit: ^limit,
+        order_by: :id
       )
     )
+    |> Repo.preload([:user, :community])
+  end
+
+  def posts_timeline_by_community(offset, limit, name) do
+    Repo.all(
+      from(p in Post,
+        join: c in Community,
+        on: c.id == p.community_id,
+        offset: ^offset,
+        limit: ^limit,
+        order_by: :id,
+        where: c.name == ^name
+      )
+    )
+    |> Repo.preload([:user, :community])
   end
 
   @doc """

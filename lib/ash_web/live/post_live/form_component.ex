@@ -22,6 +22,8 @@ defmodule AshWeb.PostLive.FormComponent do
         <.input field={@form[:title]} type="text" label="Title" />
         <.input field={@form[:body]} type="text" label="Body" />
         <.input field={@form[:link]} type="text" label="Link" />
+        <.input field={@form[:community_id]} type="text" label="Community" />
+        <.input field={@form[:user_id]} type="text" label="User" />
         <:actions>
           <.button phx-disable-with="Saving...">Save Post</.button>
         </:actions>

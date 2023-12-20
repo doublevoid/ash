@@ -3,7 +3,9 @@ defmodule AshWeb.Components.PostComponent do
 
   def post(assigns) do
     ~H"""
-    <p>Post title: <%= @post.title %></p>
+    <p><%= @post.title %></p>
+    <p>/c/<%= @post.community.name %></p>
+    <p><%= @post.user.email %></p>
     """
   end
 end

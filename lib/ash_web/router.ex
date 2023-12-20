@@ -68,10 +68,9 @@ defmodule AshWeb.Router do
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
 
       live "/communities/new", CommunityLive.Index, :new
-      live "/communities/:id/edit", CommunityLive.Index, :edit
+      live "/c/:name/edit", CommunityLive.Index, :edit
 
-      live "/communities/:id/show/edit", CommunityLive.Show, :edit
-      live "/communities/:id", CommunityLive.Show, :show
+      live "/c/:name/show/edit", CommunityLive.Show, :edit
     end
   end
 
@@ -84,8 +83,11 @@ defmodule AshWeb.Router do
       on_mount: [{AshWeb.UserAuth, :mount_current_user}] do
       live "/users/confirm/:token", UserConfirmationLive, :edit
       live "/users/confirm", UserConfirmationInstructionsLive, :new
-      live "/communities", CommunityLive.Index, :index
       live "/", FrontpageLive.Show, :show
+      live "/c/:name", CommunityLive.Show, :show
+      live "/posts", PostLive.Index, :index
+      live "/posts/new", PostLive.Index, :new
+      live "/posts/:id", PostLive.Show, :show
     end
   end
 end

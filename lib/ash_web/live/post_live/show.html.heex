@@ -12,6 +12,7 @@
   <:item title="Title"><%= @post.title %></:item>
   <:item title="Body"><%= @post.body %></:item>
   <:item title="Link"><%= @post.link %></:item>
+  <:item title="Community"><%= @post.community.name %></:item>
 </.list>
 
 <.back navigate={~p"/posts"}>Back to posts</.back>

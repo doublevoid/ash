@@ -1,4 +1,4 @@
-defmodule AshWeb.FrontpageLive.MainComponent do
+defmodule AshWeb.CommunityLive.TimelineComponent do
   alias AshWeb.Components.PostComponent
   use AshWeb, :live_component
 
