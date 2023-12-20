@@ -2,30 +2,23 @@ defmodule AshWeb.Components.VoteComponent do
   alias Ash.Votes.PostVote
   alias Ash.Votes
   use AshWeb, :live_component
-  require IEx
 
   @impl true
   def render(assigns) do
-    if assigns.post do
-      if assigns.post.id === 80 do
-        # IEx.pry()
-      end
-    end
-
     ~H"""
     <div>
       <div id={@id} phx-update="replace" class="flex flex-col">
         <div phx-click="upvote" phx-value-id={@post.id} phx-value-type="post" phx-target={@myself}>
           <.icon
             name="hero-arrow-up-circle"
-            class={"ml-1 w-3 h-3 #{if Enum.any?(@post.votes, fn x -> x && x.value > 0 end), do: "bg-blue-600", else: "yeah"}"}
+            class={"ml-1 w-3 h-3 #{if Enum.any?(@post.votes, fn x -> x && x.value > 0 end), do: "bg-blue-600"}"}
           />
         </div>
 
         <div phx-click="downvote" phx-value-id={@post.id} phx-value-type="post" phx-target={@myself}>
           <.icon
             name="hero-arrow-down-circle"
-            class={"ml-1 w-3 h-3 #{if Enum.any?(@post.votes, fn x -> x && x.value < 0 end), do: "bg-red-600", else: "yeah"}"}
+            class={"ml-1 w-3 h-3 #{if Enum.any?(@post.votes, fn x -> x && x.value < 0 end), do: "bg-red-600"}"}
           />
         </div>
       </div>
