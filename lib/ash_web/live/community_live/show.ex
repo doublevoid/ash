@@ -26,7 +26,7 @@ defmodule AshWeb.CommunityLive.Show do
     socket
     |> assign(:page_title, page_title(socket.assigns.live_action, community))
     |> assign(:community, community)
-    |> stream(:posts, Discussions.posts_timeline_by_community(0, 25, community.name))
+    |> stream(:posts, Discussions.posts_timeline(0, 25, community.name))
     |> assign(:offset, 0)
     |> assign(:limit, 25)
   end
@@ -44,7 +44,7 @@ defmodule AshWeb.CommunityLive.Show do
   defp stream_new_posts(socket) do
     offset = socket.assigns.offset
     limit = socket.assigns.limit
-    Discussions.posts_timeline_by_community(offset, limit, socket.assigns.community.name)
+    Discussions.posts_timeline(offset, limit, socket.assigns.community.name)
   end
 
   defp page_title(:show, community), do: "/c/#{community.name}"

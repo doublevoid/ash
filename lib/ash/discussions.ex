@@ -22,29 +22,27 @@ defmodule Ash.Discussions do
     Repo.all(Post)
   end
 
-  def posts_timeline(offset, limit) do
-    Repo.all(
+  def posts_timeline(offset, limit, community_name \\ nil) do
+    query =
       from(p in Post,
         offset: ^offset,
         limit: ^limit,
         order_by: :id
       )
-    )
+      |> maybe_join_community(community_name)
+
+    Repo.all(query)
     |> Repo.preload([:user, :community])
   end
 
-  def posts_timeline_by_community(offset, limit, name) do
-    Repo.all(
-      from(p in Post,
-        join: c in Community,
-        on: c.id == p.community_id,
-        offset: ^offset,
-        limit: ^limit,
-        order_by: :id,
-        where: c.name == ^name
-      )
+  defp maybe_join_community(query, nil), do: query
+
+  defp maybe_join_community(query, community_name) do
+    from([p, ...] in query,
+      join: c in Community,
+      on: c.id == p.community_id,
+      where: c.name == ^community_name
     )
-    |> Repo.preload([:user, :community])
   end
 
   @doc """
