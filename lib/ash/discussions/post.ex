@@ -6,6 +6,8 @@ defmodule Ash.Discussions.Post do
     field :link, :string
     field :title, :string
     field :body, :string
+    belongs_to :community, Ash.Communities.Community
+    belongs_to :user, Ash.Accounts.User
 
     timestamps(type: :utc_datetime)
   end
@@ -13,7 +15,9 @@ defmodule Ash.Discussions.Post do
   @doc false
   def changeset(post, attrs) do
     post
-    |> cast(attrs, [:title, :body, :link])
-    |> validate_required([:title, :body, :link])
+    |> cast(attrs, [:title, :body, :link, :community_id, :user_id])
+    |> validate_required([:title, :body, :link, :community_id, :user_id])
+    |> assoc_constraint(:community)
+    |> assoc_constraint(:user)
   end
 end
