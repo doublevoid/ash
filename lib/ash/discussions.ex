@@ -6,7 +6,6 @@ defmodule Ash.Discussions do
   import Ecto.Query, warn: false
   alias Ash.Votes.PostVote
   alias Ash.Accounts.User
-  alias Ash.Communities.Community
   alias Ash.Repo
 
   alias Ash.Discussions.Post
