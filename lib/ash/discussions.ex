@@ -28,13 +28,17 @@ defmodule Ash.Discussions do
       from(p in Post,
         join: c in assoc(p, :community),
         join: u in assoc(p, :user),
+        left_join: v in assoc(p, :votes),
         preload: [community: c, user: u],
+        select: p,
+        select_merge: %{karma: sum(v.value)},
         offset: ^offset,
         limit: ^limit,
-        order_by: :id
+        order_by: :id,
+        group_by: [p.id, c.id, u.id]
       )
       |> maybe_filter_community(community_name)
-      |> maybe_join_votes(user)
+      |> maybe_join_user_votes(user)
 
     Repo.all(query)
   end
@@ -47,15 +51,16 @@ defmodule Ash.Discussions do
     )
   end
 
-  defp maybe_join_votes(query, nil), do: query
+  defp maybe_join_user_votes(query, nil), do: query
 
-  defp maybe_join_votes(query, %User{} = user) do
-    from([p, ...] in query,
-      left_join: v in PostVote,
-      on: v.post_id == p.id,
-      where: v.user_id == ^user.id,
+  defp maybe_join_user_votes(query, %User{} = user) do
+    from([p, c, u, v] in query,
+      left_join: uv in PostVote,
+      on: uv.post_id == p.id and uv.user_id == u.id,
+      where: uv.user_id == ^user.id,
       or_where: is_nil(v.user_id),
-      preload: [votes: v]
+      preload: [votes: uv],
+      group_by: [uv.id]
     )
   end
 
@@ -74,6 +79,25 @@ defmodule Ash.Discussions do
 
   """
   def get_post!(id, preloads \\ []), do: Repo.get!(Post, id) |> Repo.preload(preloads)
+
+  def get_post_with_extra_data!(id) do
+    query =
+      from p in Post,
+        left_join: v in PostVote,
+        on: v.post_id == p.id,
+        left_join: c in assoc(p, :community),
+        left_join: u in assoc(p, :user),
+        left_join: uv in PostVote,
+        on: uv.post_id == p.id and uv.user_id == u.id,
+        where: p.id == ^id,
+        preload: [community: c, user: u, votes: uv],
+        select: p,
+        select_merge: %{karma: sum(v.value), current_user_vote: uv},
+        group_by: [p.id, u.id, c.id, uv.id]
+
+    IO.inspect(Repo.one(query))
+    Repo.one(query)
+  end
 
   @doc """
   Creates a post.

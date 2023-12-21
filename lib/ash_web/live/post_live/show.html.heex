@@ -1,19 +1,33 @@
-<.header>
-  Post <%= @post.id %>
-  <:subtitle>This is a post record from your database.</:subtitle>
-  <:actions>
-    <.link patch={~p"/posts/#{@post}/show/edit"} phx-click={JS.push_focus()}>
-      <.button>Edit post</.button>
-    </.link>
-  </:actions>
-</.header>
+<div></div>
 
-<.list>
-  <:item title="Title"><%= @post.title %></:item>
-  <:item title="Body"><%= @post.body %></:item>
-  <:item title="Link"><%= @post.link %></:item>
-  <:item title="Community"><%= @post.community.name %></:item>
-</.list>
+<div class="flex flex-row">
+  <div class="flex mr-2">
+    <.live_component
+      module={AshWeb.Components.VoteComponent}
+      id={"vote-post-#{@post.id}"}
+      current_user={@current_user}
+      voteable={@post}
+    />
+  </div>
+  <div class="flex flex-row">
+    <div class="flex flex-col">
+      <%= AshWeb.Components.CommunityHeaderComponent.header(%{community: @post.community}) %>
+      <span class="text-lg">
+        <%= @post.title %>
+      </span>
+    </div>
+    <div class="ml-1 text-xs mt-1 flex flex-row">
+      • Posted by
+      <.link class="ml-1 mr-1" href={~p"/u/#{@post.user.username}"}>
+        <%= "/u/#{@post.user.username}" %>
+      </.link>
+      at:
+      <p class="ml-1">
+        <%= @post.inserted_at %>
+      </p>
+    </div>
+  </div>
+</div>
 
 <.back navigate={~p"/posts"}>Back to posts</.back>
 

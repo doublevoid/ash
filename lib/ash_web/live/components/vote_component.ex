@@ -1,4 +1,5 @@
 defmodule AshWeb.Components.VoteComponent do
+  alias Ash.Discussions
   alias Ash.Votes.PostVote
   alias Ash.Votes
   use AshWeb, :live_component
@@ -17,7 +18,7 @@ defmodule AshWeb.Components.VoteComponent do
 
     ~H"""
     <div>
-      <div id={@id} phx-update="replace" class="flex flex-col">
+      <div id={@id} phx-update="replace" class="flex flex-col text-center">
         <div
           phx-click="upvote"
           phx-value-id={@voteable.id}
@@ -26,8 +27,12 @@ defmodule AshWeb.Components.VoteComponent do
         >
           <.icon
             name="hero-arrow-up-circle"
-            class={"ml-1 w-3 h-3 #{if Enum.any?(@voteable.votes, fn x -> x && x.value > 0 end), do: "bg-blue-600"}"}
+            class={"w-3 h-3 #{if Enum.any?(@voteable.votes, fn x -> x && x.value > 0 end), do: "bg-blue-600"}"}
           />
+        </div>
+
+        <div class="">
+          <%= @voteable.karma || 0 %>
         </div>
 
         <div
@@ -38,7 +43,7 @@ defmodule AshWeb.Components.VoteComponent do
         >
           <.icon
             name="hero-arrow-down-circle"
-            class={"ml-1 w-3 h-3 #{if Enum.any?(@voteable.votes, fn x -> x && x.value < 0 end), do: "bg-red-600"}"}
+            class={"w-3 h-3 #{if Enum.any?(@voteable.votes, fn x -> x && x.value < 0 end), do: "bg-red-600"}"}
           />
         </div>
       </div>
@@ -61,7 +66,7 @@ defmodule AshWeb.Components.VoteComponent do
   end
 
   defp update_post_vote(post, post_vote) do
-    %{post | votes: [post_vote]}
+    Discussions.get_post_with_extra_data!(post.id)
   end
 
   defp handle_vote(socket, value) do
