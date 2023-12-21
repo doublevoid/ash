@@ -20,14 +20,15 @@ defmodule AshWeb.Components.VoteComponent do
     <div>
       <div id={@id} phx-update="replace" class="flex flex-col text-center">
         <div
-          phx-click="upvote"
+          phx-click="vote"
           phx-value-id={@voteable.id}
           phx-value-type={@voteable_type}
+          phx-value-value={1}
           phx-target={@myself}
         >
           <.icon
             name="hero-arrow-up-circle"
-            class={"w-3 h-3 #{if Enum.any?(@voteable.votes, fn x -> x && x.value > 0 end), do: "bg-blue-600"}"}
+            class={"w-3 h-3 #{if @current_user && Enum.any?(@voteable.votes, fn x -> x && x.value > 0 end), do: "bg-blue-600"}"}
           />
         </div>
 
@@ -36,14 +37,15 @@ defmodule AshWeb.Components.VoteComponent do
         </div>
 
         <div
-          phx-click="downvote"
+          phx-click="vote"
           phx-value-id={@voteable.id}
           phx-value-type={@voteable_type}
+          phx-value-value={-1}
           phx-target={@myself}
         >
           <.icon
             name="hero-arrow-down-circle"
-            class={"w-3 h-3 #{if Enum.any?(@voteable.votes, fn x -> x && x.value < 0 end), do: "bg-red-600"}"}
+            class={"w-3 h-3 #{if @current_user && Enum.any?(@voteable.votes, fn x -> x && x.value < 0 end), do: "bg-red-600"}"}
           />
         </div>
       </div>
@@ -52,17 +54,17 @@ defmodule AshWeb.Components.VoteComponent do
   end
 
   @impl true
-  def handle_event("upvote", %{"id" => _id, "type" => "post"}, socket) do
-    {:noreply,
-     socket
-     |> assign(voteable: handle_vote(socket, 1))}
-  end
-
-  @impl true
-  def handle_event("downvote", %{"id" => _id, "type" => "post"}, socket) do
-    {:noreply,
-     socket
-     |> assign(voteable: handle_vote(socket, -1))}
+  def handle_event("vote", %{"id" => _id, "type" => "post", "value" => value}, socket) do
+    unless socket.assigns.current_user do
+      {:noreply,
+       socket
+       |> Phoenix.LiveView.put_flash(:error, "You must log in to vote.")
+       |> Phoenix.LiveView.redirect(to: ~p"/users/log_in")}
+    else
+      {:noreply,
+       socket
+       |> assign(voteable: handle_vote(socket, value))}
+    end
   end
 
   defp update_post_vote(post, post_vote) do
