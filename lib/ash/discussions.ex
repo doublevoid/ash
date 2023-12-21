@@ -95,7 +95,6 @@ defmodule Ash.Discussions do
         select_merge: %{karma: sum(v.value), current_user_vote: uv},
         group_by: [p.id, u.id, c.id, uv.id]
 
-    IO.inspect(Repo.one(query))
     Repo.one(query)
   end
 
