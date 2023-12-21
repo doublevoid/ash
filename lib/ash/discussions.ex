@@ -73,7 +73,7 @@ defmodule Ash.Discussions do
       ** (Ecto.NoResultsError)
 
   """
-  def get_post!(id), do: Repo.get!(Post, id)
+  def get_post!(id, preloads \\ []), do: Repo.get!(Post, id) |> Repo.preload(preloads)
 
   @doc """
   Creates a post.

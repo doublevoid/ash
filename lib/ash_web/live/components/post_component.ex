@@ -3,9 +3,11 @@ defmodule AshWeb.Components.PostComponent do
 
   def post(assigns) do
     ~H"""
-    <p><%= @post.title %></p>
-    <.link href={~p"/c/#{@post.community.name}"} method="get">
-      <p>/c/<%= @post.community.name %></p>
+    <.link href={~p"/c/#{@post.community.name}/#{@post.id}"}>
+      <%= @post.title %>
+    </.link>
+    <.link href={~p"/c/#{@post.community.name}"}>
+      /c/<%= @post.community.name %>
     </.link>
     <p><%= @post.user.username %></p>
     """

@@ -13,7 +13,7 @@ defmodule AshWeb.PostLive.Show do
     {:noreply,
      socket
      |> assign(:page_title, page_title(socket.assigns.live_action))
-     |> assign(:post, Discussions.get_post!(id))}
+     |> assign(:post, Discussions.get_post!(id, :community))}
   end
 
   defp page_title(:show), do: "Show Post"
