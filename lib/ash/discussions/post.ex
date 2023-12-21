@@ -7,7 +7,6 @@ defmodule Ash.Discussions.Post do
     field :title, :string
     field :body, :string
     field :karma, :integer, virtual: true
-    field :current_user_vote, :integer, virtual: true
     belongs_to :community, Ash.Communities.Community
     belongs_to :user, Ash.Accounts.User
     has_many :votes, Ash.Votes.PostVote
