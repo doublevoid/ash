@@ -25,22 +25,18 @@ defmodule Ash.Discussions do
 
   def posts_timeline(offset, limit, community_name \\ nil, user \\ nil) do
     query =
-      from(p in Post,
-        join: c in assoc(p, :community),
-        join: u in assoc(p, :user),
-        left_join: v in assoc(p, :votes),
-        preload: [community: c, user: u],
-        select: p,
-        select_merge: %{karma: sum(v.value)},
-        offset: ^offset,
-        limit: ^limit,
-        order_by: :id,
-        group_by: [p.id, c.id, u.id]
-      )
+      base_post_query()
+      |> paginate_timeline(offset, limit)
       |> maybe_filter_community(community_name)
       |> maybe_join_user_votes(user)
 
     Repo.all(query)
+  end
+
+  defp paginate_timeline(query, offset, limit) do
+    query
+    |> offset(^offset)
+    |> limit(^limit)
   end
 
   defp maybe_filter_community(query, nil), do: query
@@ -80,22 +76,26 @@ defmodule Ash.Discussions do
   """
   def get_post!(id, preloads \\ []), do: Repo.get!(Post, id) |> Repo.preload(preloads)
 
-  def get_post_with_extra_data!(id) do
+  def get_post_with_extra_data!(id, user \\ nil) do
     query =
-      from p in Post,
-        left_join: v in PostVote,
-        on: v.post_id == p.id,
-        left_join: c in assoc(p, :community),
-        left_join: u in assoc(p, :user),
-        left_join: uv in PostVote,
-        on: uv.post_id == p.id and uv.user_id == u.id,
-        where: p.id == ^id,
-        preload: [community: c, user: u, votes: uv],
-        select: p,
-        select_merge: %{karma: sum(v.value), current_user_vote: uv},
-        group_by: [p.id, u.id, c.id, uv.id]
+      base_post_query()
+      |> where([p], p.id == ^id)
+      |> maybe_join_user_votes(user)
 
     Repo.one(query)
+  end
+
+  defp base_post_query() do
+    from(p in Post,
+      join: c in assoc(p, :community),
+      join: u in assoc(p, :user),
+      left_join: v in assoc(p, :votes),
+      preload: [community: c, user: u],
+      select: p,
+      select_merge: %{karma: sum(v.value)},
+      order_by: :id,
+      group_by: [p.id, c.id, u.id]
+    )
   end
 
   @doc """
