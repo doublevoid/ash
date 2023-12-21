@@ -6,6 +6,8 @@ defmodule Ash.Discussions.Comment do
     field :body, :string
     belongs_to :user, Ash.Accounts.User
     belongs_to :post, Ash.Discussions.Post
+    belongs_to :parent_comment, Ash.Discussions.Comment
+    has_many :child_comments, Ash.Discussions.Comment
 
     timestamps(type: :utc_datetime)
   end
@@ -13,9 +15,10 @@ defmodule Ash.Discussions.Comment do
   @doc false
   def changeset(comment, attrs) do
     comment
-    |> cast(attrs, [:body, :post_id, :user_id])
+    |> cast(attrs, [:body, :post_id, :user_id, :parent_comment_id])
     |> validate_required([:body, :post_id, :user_id])
     |> assoc_constraint(:post)
     |> assoc_constraint(:user)
+    |> assoc_constraint(:parent_comment)
   end
 end
