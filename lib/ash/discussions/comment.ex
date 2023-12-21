@@ -7,6 +7,7 @@ defmodule Ash.Discussions.Comment do
     belongs_to :user, Ash.Accounts.User
     belongs_to :post, Ash.Discussions.Post
     belongs_to :parent_comment, Ash.Discussions.Comment
+    has_many :votes, Ash.Votes.CommentVote
     has_many :child_comments, Ash.Discussions.Comment
 
     timestamps(type: :utc_datetime)

@@ -8,6 +8,10 @@ defmodule Ash.Accounts.User do
     field :password, :string, virtual: true, redact: true
     field :hashed_password, :string, redact: true
     field :confirmed_at, :naive_datetime
+    has_many :posts, Ash.Discussions.Post
+    has_many :comments, Ash.Discussions.Comment
+    has_many :post_votes, Ash.Votes.PostVote
+    has_many :comment_votes, Ash.Votes.CommentVote
 
     timestamps(type: :utc_datetime)
   end
