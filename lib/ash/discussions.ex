@@ -4,6 +4,7 @@ defmodule Ash.Discussions do
   """
 
   import Ecto.Query, warn: false
+  alias Ash.Votes.CommentVote
   alias Ash.Votes.PostVote
   alias Ash.Accounts.User
   alias Ash.Repo
@@ -262,6 +263,9 @@ defmodule Ash.Discussions do
       from p in Post,
         join: c in assoc(p, :community),
         left_join: v in assoc(p, :votes),
+        left_join: u in assoc(p, :user),
+        left_join: uv in PostVote,
+        on: uv.post_id == p.id and uv.user_id == ^user.id,
         select: %{
           type: "post",
           id: p.id,
@@ -269,16 +273,21 @@ defmodule Ash.Discussions do
           title: p.title,
           inserted_at: p.inserted_at,
           community: %{c | inserted_at: nil},
+          user: %{u | inserted_at: nil},
+          votes: [%{id: uv.id, value: uv.value, comment_id: nil, post_id: uv.post_id}],
           karma: sum(v.value),
           user_id: p.user_id
         },
-        group_by: [c.id, p.id]
+        group_by: [c.id, p.id, u.id, uv.id]
 
     union_query =
       from c in Comment,
         join: p in assoc(c, :post),
         join: commu in assoc(p, :community),
         left_join: v in assoc(c, :votes),
+        left_join: u in assoc(p, :user),
+        left_join: uv in CommentVote,
+        on: uv.comment_id == c.id and uv.user_id == ^user.id,
         select: %{
           type: "comment",
           id: c.id,
@@ -286,13 +295,15 @@ defmodule Ash.Discussions do
           title: p.title,
           inserted_at: c.inserted_at,
           community: %{commu | inserted_at: nil},
+          user: %{u | inserted_at: nil},
+          votes: [%{id: uv.id, value: uv.value, comment_id: uv.comment_id, post_id: nil}],
           karma: sum(v.value),
           user_id: c.user_id
         },
         union_all: ^post_query,
         offset: ^offset,
         limit: ^limit,
-        group_by: [c.id, p.id, commu.id],
+        group_by: [c.id, p.id, commu.id, u.id, uv.id],
         where: c.user_id == ^user.id,
         order_by: fragment("inserted_at DESC")
 

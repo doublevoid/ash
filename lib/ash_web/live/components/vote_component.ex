@@ -28,7 +28,7 @@ defmodule AshWeb.Components.VoteComponent do
         >
           <.icon
             name="hero-arrow-up-circle"
-            class={"w-3 h-3 #{if @current_user && Enum.any?(@voteable.votes, fn x -> x && x.value > 0 end), do: "bg-blue-600"}"}
+            class={"w-3 h-3 #{if @current_user && @voteable.votes && Enum.any?(@voteable.votes, fn x -> x && x.value > 0 && !is_nil(x.value) end), do: "bg-blue-600"}"}
           />
         </div>
 
@@ -45,7 +45,7 @@ defmodule AshWeb.Components.VoteComponent do
         >
           <.icon
             name="hero-arrow-down-circle"
-            class={"w-3 h-3 #{if @current_user && Enum.any?(@voteable.votes, fn x -> x && x.value < 0 end), do: "bg-red-600"}"}
+            class={"w-3 h-3 #{if @current_user && @voteable.votes && Enum.any?(@voteable.votes, fn x -> x && x.value < 0 && !is_nil(x.value) end), do: "bg-red-600"}"}
           />
         </div>
       </div>

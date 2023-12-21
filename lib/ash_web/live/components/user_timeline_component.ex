@@ -1,4 +1,5 @@
 defmodule AshWeb.Components.UserTimelineComponent do
+  alias Ash.Discussions.Post
   alias AshWeb.Components.PostComponent
   alias AshWeb.Components.VoteComponent
 
@@ -18,7 +19,7 @@ defmodule AshWeb.Components.UserTimelineComponent do
             module={VoteComponent}
             id={"vote-discussion-#{discussion.id}"}
             current_user={@current_user}
-            voteable={discussion}
+            voteable={struct(Post, discussion)}
           />
           <PostComponent.post post={discussion} />
           <div class="mb-4" />

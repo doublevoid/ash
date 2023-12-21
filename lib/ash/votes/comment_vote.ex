@@ -5,7 +5,7 @@ defmodule Ash.Votes.CommentVote do
   schema "comment_votes" do
     field :value, :integer
 
-    belongs_to :post, Ash.Discussions.Post
+    belongs_to :comment, Ash.Discussions.Comment
     belongs_to :user, Ash.Accounts.User
 
     timestamps(type: :utc_datetime)

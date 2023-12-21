@@ -71,6 +71,7 @@ defmodule AshWeb.Router do
       live "/c/:name/edit", CommunityLive.Index, :edit
 
       live "/c/:name/show/edit", CommunityLive.Show, :edit
+      live "/u/:username", UserpageLive.Show, :show
     end
   end
 
