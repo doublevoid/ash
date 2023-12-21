@@ -67,31 +67,31 @@ defmodule AshWeb.Components.VoteComponent do
     end
   end
 
-  defp update_post_vote(post, post_vote) do
-    Discussions.get_post_with_extra_data!(post.id)
+  defp update_post_vote(post, user) do
+    Discussions.get_post_with_extra_data!(post.id, user)
   end
 
   defp handle_vote(socket, value) do
+    {value, _} = Integer.parse(value)
     vote = Enum.at(socket.assigns.voteable.votes, 0)
     post = socket.assigns.voteable
 
-    post_vote =
-      case vote do
-        %PostVote{value: ^value} ->
-          Votes.delete_post_vote(vote)
-          nil
+    case vote do
+      %PostVote{value: ^value} ->
+        Votes.delete_post_vote(vote)
+        nil
 
-        _ ->
-          {_, post_vote} =
-            Votes.upsert_post_vote(%{
-              post_id: post.id,
-              user_id: socket.assigns.current_user.id,
-              value: value
-            })
+      _ ->
+        {_, post_vote} =
+          Votes.upsert_post_vote(%{
+            post_id: post.id,
+            user_id: socket.assigns.current_user.id,
+            value: value
+          })
 
-          post_vote
-      end
+        post_vote
+    end
 
-    update_post_vote(post, post_vote)
+    update_post_vote(post, socket.assigns.current_user)
   end
 end

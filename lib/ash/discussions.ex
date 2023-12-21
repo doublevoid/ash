@@ -52,9 +52,7 @@ defmodule Ash.Discussions do
   defp maybe_join_user_votes(query, %User{} = user) do
     from([p, c, u, v] in query,
       left_join: uv in PostVote,
-      on: uv.post_id == p.id and uv.user_id == u.id,
-      where: uv.user_id == ^user.id,
-      or_where: is_nil(v.user_id),
+      on: uv.post_id == p.id and uv.user_id == ^user.id,
       preload: [votes: uv],
       group_by: [uv.id]
     )
@@ -79,8 +77,8 @@ defmodule Ash.Discussions do
   def get_post_with_extra_data!(id, user \\ nil) do
     query =
       base_post_query()
-      |> where([p], p.id == ^id)
       |> maybe_join_user_votes(user)
+      |> where([p], p.id == ^id)
 
     Repo.one(query)
   end
