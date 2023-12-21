@@ -256,4 +256,46 @@ defmodule Ash.Discussions do
   def change_comment(%Comment{} = comment, attrs \\ %{}) do
     Comment.changeset(comment, attrs)
   end
+
+  def user_timeline(user, offset, limit) do
+    post_query =
+      from p in Post,
+        join: c in assoc(p, :community),
+        left_join: v in assoc(p, :votes),
+        select: %{
+          type: "post",
+          id: p.id,
+          body: p.body,
+          title: p.title,
+          inserted_at: p.inserted_at,
+          community: %{c | inserted_at: nil},
+          karma: sum(v.value),
+          user_id: p.user_id
+        },
+        group_by: [c.id, p.id]
+
+    union_query =
+      from c in Comment,
+        join: p in assoc(c, :post),
+        join: commu in assoc(p, :community),
+        left_join: v in assoc(c, :votes),
+        select: %{
+          type: "comment",
+          id: c.id,
+          body: c.body,
+          title: p.title,
+          inserted_at: c.inserted_at,
+          community: %{commu | inserted_at: nil},
+          karma: sum(v.value),
+          user_id: c.user_id
+        },
+        union_all: ^post_query,
+        offset: ^offset,
+        limit: ^limit,
+        group_by: [c.id, p.id, commu.id],
+        where: c.user_id == ^user.id,
+        order_by: fragment("inserted_at DESC")
+
+    Repo.all(union_query)
+  end
 end

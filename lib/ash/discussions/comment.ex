@@ -4,6 +4,8 @@ defmodule Ash.Discussions.Comment do
 
   schema "comments" do
     field :body, :string
+    field :karma, :integer, virtual: true
+
     belongs_to :user, Ash.Accounts.User
     belongs_to :post, Ash.Discussions.Post
     belongs_to :parent_comment, Ash.Discussions.Comment

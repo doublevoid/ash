@@ -1,4 +1,4 @@
-defmodule AshWeb.FrontpageLive.Show do
+defmodule AshWeb.UserpageLive.Show do
   use AshWeb, :live_view
 
   alias Ash.Discussions
@@ -9,7 +9,7 @@ defmodule AshWeb.FrontpageLive.Show do
      socket
      |> stream(
        :discussions,
-       Discussions.posts_timeline(0, 25, nil, socket.assigns.current_user)
+       Discussions.user_timeline(socket.assigns.current_user, 0, 25)
      )
      |> assign(:offset, 0)
      |> assign(:limit, 25)}
@@ -20,14 +20,14 @@ defmodule AshWeb.FrontpageLive.Show do
     socket =
       socket
       |> update(:offset, fn offset -> offset + socket.assigns.limit end)
-      |> stream(:discussions, stream_new_posts(socket))
+      |> stream(:discussions, stream_new_discussions(socket))
 
     {:noreply, socket}
   end
 
-  defp stream_new_posts(socket) do
+  defp stream_new_discussions(socket) do
     offset = socket.assigns.offset
     limit = socket.assigns.limit
-    Discussions.posts_timeline(offset, limit, nil, socket.assigns.current_user)
+    Discussions.user_timeline(socket.assigns.current_user, offset, limit)
   end
 end
