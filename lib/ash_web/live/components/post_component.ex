@@ -7,7 +7,7 @@ defmodule AshWeb.Components.PostComponent do
     <.link href={~p"/c/#{@post.community.name}"} method="get">
       <p>/c/<%= @post.community.name %></p>
     </.link>
-    <p><%= @post.user.email %></p>
+    <p><%= @post.user.username %></p>
     """
   end
 end
