@@ -9,22 +9,27 @@
       voteable={@post}
     />
   </div>
-  <div class="flex flex-row">
-    <div class="flex flex-col">
-      <%= AshWeb.Components.CommunityHeaderComponent.header(%{community: @post.community}) %>
-      <span class="text-lg">
+  <div class="flex flex-col">
+    <div class="flex flex-row">
+      <div class="flex flex-row">
+        <%= AshWeb.Components.CommunityHeaderComponent.header(%{community: @post.community}) %> • Posted by
+        <div></div>
+        <.link class="ml-1 mr-1" href={~p"/u/#{@post.user.username}"}>
+          <%= "/u/#{@post.user.username}" %>
+        </.link>
+        at:
+        <p class="ml-1">
+          <%= @post.inserted_at %>
+        </p>
+      </div>
+    </div>
+    <div class="mt-1 flex flex-row">
+      <span class="text-lg font-bold">
         <%= @post.title %>
       </span>
     </div>
-    <div class="ml-1 text-xs mt-1 flex flex-row">
-      • Posted by
-      <.link class="ml-1 mr-1" href={~p"/u/#{@post.user.username}"}>
-        <%= "/u/#{@post.user.username}" %>
-      </.link>
-      at:
-      <p class="ml-1">
-        <%= @post.inserted_at %>
-      </p>
+    <div class="flex flex-row">
+      <%= @post.body %>
     </div>
   </div>
 </div>
