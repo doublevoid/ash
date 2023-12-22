@@ -43,7 +43,7 @@ defmodule Ash.Accounts.User do
     user
     |> cast(attrs, [:email, :password, :username])
     |> validate_email(opts)
-    |> validate_username()
+    |> validate_username(opts)
     |> validate_password(opts)
   end
 
@@ -66,10 +66,11 @@ defmodule Ash.Accounts.User do
     |> maybe_hash_password(opts)
   end
 
-  defp validate_username(changeset) do
+  defp validate_username(changeset, opts) do
     changeset
     |> validate_required([:username])
     |> validate_length(:username, max: 22)
+    |> maybe_validate_unique_password(opts)
   end
 
   defp maybe_hash_password(changeset, opts) do
@@ -94,6 +95,16 @@ defmodule Ash.Accounts.User do
       changeset
       |> unsafe_validate_unique(:email, Ash.Repo)
       |> unique_constraint(:email)
+    else
+      changeset
+    end
+  end
+
+  defp maybe_validate_unique_password(changeset, opts) do
+    if Keyword.get(opts, :validate_email, true) do
+      changeset
+      |> unsafe_validate_unique(:username, Ash.Repo)
+      |> unique_constraint(:username)
     else
       changeset
     end
