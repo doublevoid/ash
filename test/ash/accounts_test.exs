@@ -84,6 +84,19 @@ defmodule Ash.AccountsTest do
       assert "has already been taken" in errors_on(changeset).email
     end
 
+    test "validates username uniqueness" do
+      %{username: username, email: email, password: password} = user_fixture()
+
+      {:error, changeset} =
+        Accounts.register_user(%{username: username, email: email, password: password})
+
+      assert "has already been taken" in errors_on(changeset).username
+
+      # Now try with the upper cased username too, to check that username case is ignored.
+      {:error, changeset} = Accounts.register_user(%{username: String.upcase(username)})
+      assert "has already been taken" in errors_on(changeset).username
+    end
+
     test "registers users with a hashed password" do
       email = unique_user_email()
       {:ok, user} = Accounts.register_user(valid_user_attributes(email: email))
@@ -97,7 +110,7 @@ defmodule Ash.AccountsTest do
   describe "change_user_registration/2" do
     test "returns a changeset" do
       assert %Ecto.Changeset{} = changeset = Accounts.change_user_registration(%User{})
-      assert changeset.required == [:password, :email]
+      assert changeset.required == [:password, :username, :email]
     end
 
     test "allows fields to be set" do
