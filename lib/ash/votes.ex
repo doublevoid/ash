@@ -4,6 +4,8 @@ defmodule Ash.Votes do
   """
 
   import Ecto.Query, warn: false
+  alias Ash.Discussions.Post
+  alias Ash.Accounts.User
   alias Ash.Repo
 
   alias Ash.Votes.PostVote
@@ -88,8 +90,9 @@ defmodule Ash.Votes do
       {:error, %Ecto.Changeset{}}
 
   """
-  def delete_post_vote(%PostVote{} = post_vote) do
-    Repo.delete(post_vote)
+  def delete_post_vote(%Post{} = post, %User{} = user) do
+    Repo.get_by(PostVote, post_id: post.id, user_id: user.id)
+    |> Repo.delete()
   end
 
   @doc """

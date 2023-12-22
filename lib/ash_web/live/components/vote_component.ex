@@ -1,6 +1,5 @@
 defmodule AshWeb.Components.VoteComponent do
   alias Ash.Discussions
-  alias Ash.Votes.PostVote
   alias Ash.Votes
   use AshWeb, :live_component
 
@@ -28,7 +27,7 @@ defmodule AshWeb.Components.VoteComponent do
         >
           <.icon
             name="hero-arrow-up-circle"
-            class={"w-3 h-3 #{if @current_user && @voteable.votes && Enum.any?(@voteable.votes, fn x -> x && x.value > 0 && !is_nil(x.value) end), do: "bg-blue-600"}"}
+            class={"w-3 h-3 #{if @current_user && @voteable.user_vote == 1, do: "bg-blue-600"}"}
           />
         </div>
 
@@ -45,7 +44,7 @@ defmodule AshWeb.Components.VoteComponent do
         >
           <.icon
             name="hero-arrow-down-circle"
-            class={"w-3 h-3 #{if @current_user && @voteable.votes && Enum.any?(@voteable.votes, fn x -> x && x.value < 0 && !is_nil(x.value) end), do: "bg-red-600"}"}
+            class={"w-3 h-3 #{if @current_user && @voteable.user_vote == -1, do: "bg-red-600"}"}
           />
         </div>
       </div>
@@ -73,25 +72,21 @@ defmodule AshWeb.Components.VoteComponent do
 
   defp handle_vote(socket, value) do
     {value, _} = Integer.parse(value)
-    vote = Enum.at(socket.assigns.voteable.votes, 0)
     post = socket.assigns.voteable
+    user = socket.assigns.current_user
 
-    case vote do
-      %PostVote{value: ^value} ->
-        Votes.delete_post_vote(vote)
-        nil
+    case post.user_vote do
+      ^value ->
+        Votes.delete_post_vote(post, user)
 
       _ ->
-        {_, post_vote} =
-          Votes.upsert_post_vote(%{
-            post_id: post.id,
-            user_id: socket.assigns.current_user.id,
-            value: value
-          })
-
-        post_vote
+        Votes.upsert_post_vote(%{
+          post_id: post.id,
+          user_id: user.id,
+          value: value
+        })
     end
 
-    update_post_vote(post, socket.assigns.current_user)
+    update_post_vote(post, user)
   end
 end

@@ -54,7 +54,7 @@ defmodule Ash.Discussions do
     from([p, c, u, v] in query,
       left_join: uv in PostVote,
       on: uv.post_id == p.id and uv.user_id == ^user.id,
-      preload: [votes: uv],
+      select_merge: %{user_vote: uv.value},
       group_by: [uv.id]
     )
   end
@@ -271,10 +271,11 @@ defmodule Ash.Discussions do
           id: p.id,
           body: p.body,
           title: p.title,
+          link: p.link,
           inserted_at: p.inserted_at,
           community: %{c | inserted_at: nil},
           user: %{u | inserted_at: nil},
-          votes: [%{id: uv.id, value: uv.value, comment_id: nil, post_id: uv.post_id}],
+          user_vote: uv.value,
           karma: sum(v.value),
           user_id: p.user_id
         },
@@ -293,10 +294,11 @@ defmodule Ash.Discussions do
           id: c.id,
           body: c.body,
           title: p.title,
+          link: p.link,
           inserted_at: c.inserted_at,
           community: %{commu | inserted_at: nil},
           user: %{u | inserted_at: nil},
-          votes: [%{id: uv.id, value: uv.value, comment_id: uv.comment_id, post_id: nil}],
+          user_vote: uv.value,
           karma: sum(v.value),
           user_id: c.user_id
         },
