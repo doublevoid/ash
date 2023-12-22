@@ -3,6 +3,8 @@ defmodule Ash.SubscriptionsFixtures do
   This module defines test helpers for creating
   entities via the `Ash.Subscriptions` context.
   """
+  alias Ash.CommunitiesFixtures
+  alias Ash.AccountsFixtures
 
   @doc """
   Generate a user_subscription.
@@ -11,7 +13,8 @@ defmodule Ash.SubscriptionsFixtures do
     {:ok, user_subscription} =
       attrs
       |> Enum.into(%{
-
+        user_id: AccountsFixtures.user_fixture().id,
+        community_id: CommunitiesFixtures.community_fixture().id
       })
       |> Ash.Subscriptions.create_user_subscription()
 

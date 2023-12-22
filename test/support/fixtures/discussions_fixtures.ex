@@ -3,6 +3,8 @@ defmodule Ash.DiscussionsFixtures do
   This module defines test helpers for creating
   entities via the `Ash.Discussions` context.
   """
+  alias Ash.AccountsFixtures
+  alias Ash.CommunitiesFixtures
 
   @doc """
   Generate a post.
@@ -13,7 +15,9 @@ defmodule Ash.DiscussionsFixtures do
       |> Enum.into(%{
         body: "some body",
         link: "some link",
-        title: "some title"
+        title: "some title",
+        community_id: CommunitiesFixtures.community_fixture().id,
+        user_id: AccountsFixtures.user_fixture().id
       })
       |> Ash.Discussions.create_post()
 
@@ -27,7 +31,9 @@ defmodule Ash.DiscussionsFixtures do
     {:ok, comment} =
       attrs
       |> Enum.into(%{
-        body: "some body"
+        body: "some body",
+        post_id: post_fixture().id,
+        user_id: AccountsFixtures.user_fixture().id
       })
       |> Ash.Discussions.create_comment()
 

@@ -1,4 +1,6 @@
 defmodule Ash.DiscussionsTest do
+  alias Ash.CommunitiesFixtures
+  alias Ash.AccountsFixtures
   use Ash.DataCase
 
   alias Ash.Discussions
@@ -21,7 +23,13 @@ defmodule Ash.DiscussionsTest do
     end
 
     test "create_post/1 with valid data creates a post" do
-      valid_attrs = %{link: "some link", title: "some title", body: "some body"}
+      valid_attrs = %{
+        link: "some link",
+        title: "some title",
+        body: "some body",
+        user_id: AccountsFixtures.user_fixture().id,
+        community_id: CommunitiesFixtures.community_fixture().id
+      }
 
       assert {:ok, %Post{} = post} = Discussions.create_post(valid_attrs)
       assert post.link == "some link"
@@ -35,7 +43,12 @@ defmodule Ash.DiscussionsTest do
 
     test "update_post/2 with valid data updates the post" do
       post = post_fixture()
-      update_attrs = %{link: "some updated link", title: "some updated title", body: "some updated body"}
+
+      update_attrs = %{
+        link: "some updated link",
+        title: "some updated title",
+        body: "some updated body"
+      }
 
       assert {:ok, %Post{} = post} = Discussions.update_post(post, update_attrs)
       assert post.link == "some updated link"
@@ -79,7 +92,11 @@ defmodule Ash.DiscussionsTest do
     end
 
     test "create_comment/1 with valid data creates a comment" do
-      valid_attrs = %{body: "some body"}
+      valid_attrs = %{
+        body: "some body",
+        post_id: post_fixture().id,
+        user_id: AccountsFixtures.user_fixture().id
+      }
 
       assert {:ok, %Comment{} = comment} = Discussions.create_comment(valid_attrs)
       assert comment.body == "some body"
