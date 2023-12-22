@@ -266,7 +266,7 @@ defmodule Ash.Discussions do
     Comment.changeset(comment, attrs)
   end
 
-  def user_timeline(user, offset, limit) do
+  def user_timeline(offset, limit, user, current_user \\ nil) do
     post_query =
       from(p in Post,
         join: c in assoc(p, :community),
@@ -286,9 +286,10 @@ defmodule Ash.Discussions do
           karma: sum(v.value),
           user_id: p.user_id
         },
-        group_by: [c.id, p.id, u.id, uv.id]
+        group_by: [c.id, p.id, u.id, uv.id],
+        where: p.user_id == ^user.id
       )
-      |> maybe_join_user_votes(user, :post)
+      |> maybe_join_user_votes(current_user, :post)
 
     union_query =
       from(c in Comment,
@@ -310,13 +311,13 @@ defmodule Ash.Discussions do
           karma: sum(v.value),
           user_id: c.user_id
         },
-        group_by: [c.id, p.id, commu.id, u.id, uv.id]
+        group_by: [c.id, p.id, commu.id, u.id, uv.id],
+        where: c.user_id == ^user.id
       )
-      |> maybe_join_user_votes(user, :comment)
+      |> maybe_join_user_votes(current_user, :comment)
       |> union_all(^post_query)
       |> offset(^offset)
       |> limit(^limit)
-      |> where([c], c.user_id == ^user.id)
       |> order_by(fragment("inserted_at DESC"))
 
     Repo.all(union_query)

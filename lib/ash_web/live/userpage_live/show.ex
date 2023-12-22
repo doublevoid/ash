@@ -12,7 +12,7 @@ defmodule AshWeb.UserpageLive.Show do
      socket
      |> stream(
        :discussions,
-       Discussions.user_timeline(user, 0, 25)
+       Discussions.user_timeline(0, 25, user, socket.assigns.current_user)
      )
      |> assign(:user, user)
      |> assign(:offset, 0)
@@ -32,6 +32,6 @@ defmodule AshWeb.UserpageLive.Show do
   defp stream_new_discussions(socket) do
     offset = socket.assigns.offset
     limit = socket.assigns.limit
-    Discussions.user_timeline(socket.assigns.user, offset, limit)
+    Discussions.user_timeline(offset, limit, socket.assigns.user, socket.assigns.current_user)
   end
 end
