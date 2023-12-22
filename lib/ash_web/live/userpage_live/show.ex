@@ -19,7 +19,7 @@ defmodule AshWeb.UserpageLive.Show do
   def handle_event("load-more", _, socket) do
     socket =
       socket
-      |> update(:offset, fn offset -> offset + socket.assigns.limit end)
+      |> update(:offset, fn offset -> offset + socket.assigns.limit + 1 end)
       |> stream(:discussions, stream_new_discussions(socket))
 
     {:noreply, socket}

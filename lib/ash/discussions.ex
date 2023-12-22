@@ -29,7 +29,7 @@ defmodule Ash.Discussions do
       base_post_query()
       |> paginate_timeline(offset, limit)
       |> maybe_filter_community(community_name)
-      |> maybe_join_user_votes(user)
+      |> maybe_join_user_votes(user, :post)
 
     Repo.all(query)
   end
@@ -48,16 +48,24 @@ defmodule Ash.Discussions do
     )
   end
 
-  defp maybe_join_user_votes(query, nil), do: query
+  defp maybe_join_user_votes(query, nil, _), do: query
 
-  defp maybe_join_user_votes(query, %User{} = user) do
-    from([p, c, u, v] in query,
-      left_join: uv in PostVote,
-      on: uv.post_id == p.id and uv.user_id == ^user.id,
+  defp maybe_join_user_votes(query, %User{} = user, type) do
+    vote_module = vote_module_for(type)
+    id_field = id_field_for(type)
+
+    from item in query,
+      left_join: uv in ^vote_module,
+      on: field(uv, ^id_field) == field(item, :id) and uv.user_id == ^user.id,
       select_merge: %{user_vote: uv.value},
       group_by: [uv.id]
-    )
   end
+
+  defp vote_module_for(:post), do: PostVote
+  defp vote_module_for(:comment), do: CommentVote
+
+  defp id_field_for(:post), do: :post_id
+  defp id_field_for(:comment), do: :comment_id
 
   @doc """
   Gets a single post.
@@ -78,7 +86,7 @@ defmodule Ash.Discussions do
   def get_post_with_extra_data!(id, user \\ nil) do
     query =
       base_post_query()
-      |> maybe_join_user_votes(user)
+      |> maybe_join_user_votes(user, :post)
       |> where([p], p.id == ^id)
 
     Repo.one(query)
@@ -260,7 +268,7 @@ defmodule Ash.Discussions do
 
   def user_timeline(user, offset, limit) do
     post_query =
-      from p in Post,
+      from(p in Post,
         join: c in assoc(p, :community),
         left_join: v in assoc(p, :votes),
         left_join: u in assoc(p, :user),
@@ -275,14 +283,15 @@ defmodule Ash.Discussions do
           inserted_at: p.inserted_at,
           community: %{c | inserted_at: nil},
           user: %{u | inserted_at: nil},
-          user_vote: uv.value,
           karma: sum(v.value),
           user_id: p.user_id
         },
         group_by: [c.id, p.id, u.id, uv.id]
+      )
+      |> maybe_join_user_votes(user, :post)
 
     union_query =
-      from c in Comment,
+      from(c in Comment,
         join: p in assoc(c, :post),
         join: commu in assoc(p, :community),
         left_join: v in assoc(c, :votes),
@@ -298,16 +307,17 @@ defmodule Ash.Discussions do
           inserted_at: c.inserted_at,
           community: %{commu | inserted_at: nil},
           user: %{u | inserted_at: nil},
-          user_vote: uv.value,
           karma: sum(v.value),
           user_id: c.user_id
         },
-        union_all: ^post_query,
-        offset: ^offset,
-        limit: ^limit,
-        group_by: [c.id, p.id, commu.id, u.id, uv.id],
-        where: c.user_id == ^user.id,
-        order_by: fragment("inserted_at DESC")
+        group_by: [c.id, p.id, commu.id, u.id, uv.id]
+      )
+      |> maybe_join_user_votes(user, :comment)
+      |> union_all(^post_query)
+      |> offset(^offset)
+      |> limit(^limit)
+      |> where([c], c.user_id == ^user.id)
+      |> order_by(fragment("inserted_at DESC"))
 
     Repo.all(union_query)
   end
