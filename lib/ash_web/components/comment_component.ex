@@ -3,13 +3,10 @@ defmodule AshWeb.Components.CommentComponent do
 
   def comment(assigns) do
     ~H"""
-    <.link href={~p"/c/#{@comment.community.name}/comments/#{@comment.id}"}>
-      <%= @comment.title %>
-    </.link>
-    <.link href={~p"/c/#{@comment.post.community.name}"}>
-      /c/<%= @comment.community.name %>
-    </.link>
-    <p><%= @comment.user.username %></p>
+    <div class="flex flex-col">
+      <p><%= @comment.body %></p>
+      <p>/u/<%= @comment.user.username %></p>
+    </div>
     """
   end
 end

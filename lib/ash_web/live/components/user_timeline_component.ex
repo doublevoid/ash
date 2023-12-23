@@ -1,5 +1,7 @@
 defmodule AshWeb.Components.UserTimelineComponent do
+  alias AshWeb.Components.CommentComponent
   alias Ash.Discussions.Post
+  alias Ash.Discussions.Comment
   alias AshWeb.Components.PostComponent
   alias AshWeb.Components.VoteComponent
 
@@ -7,24 +9,35 @@ defmodule AshWeb.Components.UserTimelineComponent do
 
   def render(assigns) do
     ~H"""
-    <div>
-      <div
-        id="main-component-body"
-        phx-update="stream"
-        class="flex flex-col"
-        phx-viewport-bottom="load-more"
-      >
-        <%= for {_key, discussion} <- @discussions do %>
-          <.live_component
-            module={VoteComponent}
-            id={"vote-discussion-#{discussion.id}"}
-            current_user={@current_user}
-            voteable={struct(Post, discussion)}
-          />
-          <PostComponent.post post={discussion} />
-          <div class="mb-4" />
+    <div
+      id="main-component-body"
+      phx-update="stream"
+      class="flex flex-col"
+      phx-viewport-bottom="load-more"
+    >
+      <%= for {_key, discussion} <- @discussions do %>
+        <%= if discussion.type == "post" do %>
+          <div class="flex flex-row">
+            <.live_component
+              module={VoteComponent}
+              id={"vote-post-" <> Integer.to_string(discussion.id)}
+              current_user={@current_user}
+              voteable={struct(Post, discussion)}
+            />
+            <PostComponent.post post={discussion} />
+          </div>
+        <% else %>
+          <div class="flex flex-row">
+            <.live_component
+              module={VoteComponent}
+              id={"vote-comment" <> Integer.to_string(discussion.id)}
+              current_user={@current_user}
+              voteable={struct(Comment, discussion)}
+            />
+            <CommentComponent.comment comment={discussion} />
+          </div>
         <% end %>
-      </div>
+      <% end %>
     </div>
     """
   end
