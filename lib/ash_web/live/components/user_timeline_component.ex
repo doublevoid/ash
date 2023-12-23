@@ -1,5 +1,5 @@
 defmodule AshWeb.Components.UserTimelineComponent do
-  alias AshWeb.Components.CommentComponent
+  alias AshWeb.Components.UserTimelineCommentComponent
   alias Ash.Discussions.Post
   alias Ash.Discussions.Comment
   alias AshWeb.Components.PostComponent
@@ -34,7 +34,7 @@ defmodule AshWeb.Components.UserTimelineComponent do
               current_user={@current_user}
               voteable={struct(Comment, discussion)}
             />
-            <CommentComponent.comment comment={discussion} />
+            <UserTimelineCommentComponent.comment comment={discussion} />
           </div>
         <% end %>
       <% end %>
