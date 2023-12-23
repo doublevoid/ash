@@ -1,4 +1,5 @@
 defmodule AshWeb.Components.VoteComponent do
+  alias Ash.Accounts.User
   alias Ash.Discussions
   alias Ash.Votes
   use AshWeb, :live_component
@@ -54,15 +55,17 @@ defmodule AshWeb.Components.VoteComponent do
 
   @impl true
   def handle_event("vote", %{"id" => _id, "type" => "post", "value" => value}, socket) do
-    unless socket.assigns.current_user do
-      {:noreply,
-       socket
-       |> Phoenix.LiveView.put_flash(:error, "You must log in to vote.")
-       |> Phoenix.LiveView.redirect(to: ~p"/users/log_in")}
-    else
-      {:noreply,
-       socket
-       |> assign(voteable: handle_vote(socket, value))}
+    case socket.assigns.current_user do
+      %User{} ->
+        {:noreply,
+         socket
+         |> assign(voteable: handle_vote(socket, value))}
+
+      _ ->
+        {:noreply,
+         socket
+         |> Phoenix.LiveView.put_flash(:error, "You must log in to vote.")
+         |> Phoenix.LiveView.redirect(to: ~p"/users/log_in")}
     end
   end
 
