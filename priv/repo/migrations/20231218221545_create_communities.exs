@@ -6,7 +6,7 @@ defmodule Ash.Repo.Migrations.CreateCommunities do
       add :name, :"varchar(24)"
       add :description, :text
 
-      timestamps(type: :utc_datetime)
+      timestamps(type: :utc_datetime_usec)
     end
 
     create index(:communities, [:name])

@@ -13,7 +13,7 @@ defmodule Ash.Discussions.Post do
     belongs_to :user, Ash.Accounts.User
     has_many :votes, Ash.Votes.PostVote
 
-    timestamps(type: :utc_datetime)
+    timestamps(type: :utc_datetime_usec)
   end
 
   @doc false

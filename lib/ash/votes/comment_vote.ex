@@ -8,7 +8,7 @@ defmodule Ash.Votes.CommentVote do
     belongs_to :comment, Ash.Discussions.Comment
     belongs_to :user, Ash.Accounts.User
 
-    timestamps(type: :utc_datetime)
+    timestamps(type: :utc_datetime_usec)
   end
 
   @doc false

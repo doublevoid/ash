@@ -7,7 +7,7 @@ defmodule Ash.Repo.Migrations.CreateCommentVotes do
       add :comment_id, references(:comments)
       add :user_id, references(:users)
 
-      timestamps(type: :utc_datetime)
+      timestamps(type: :utc_datetime_usec)
     end
 
     create unique_index(:comment_votes, [:comment_id, :user_id])

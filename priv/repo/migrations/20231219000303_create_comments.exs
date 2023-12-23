@@ -8,7 +8,7 @@ defmodule Ash.Repo.Migrations.CreateComments do
       add :post_id, references(:posts)
       add :parent_comment_id, references(:comments)
 
-      timestamps(type: :utc_datetime)
+      timestamps(type: :utc_datetime_usec)
     end
   end
 end

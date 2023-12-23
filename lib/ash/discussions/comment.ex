@@ -13,7 +13,7 @@ defmodule Ash.Discussions.Comment do
     has_many :votes, Ash.Votes.CommentVote
     has_many :child_comments, Ash.Discussions.Comment
 
-    timestamps(type: :utc_datetime)
+    timestamps(type: :utc_datetime_usec)
   end
 
   @doc false

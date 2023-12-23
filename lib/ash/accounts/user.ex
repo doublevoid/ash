@@ -13,7 +13,7 @@ defmodule Ash.Accounts.User do
     has_many :post_votes, Ash.Votes.PostVote
     has_many :comment_votes, Ash.Votes.CommentVote
 
-    timestamps(type: :utc_datetime)
+    timestamps(type: :utc_datetime_usec)
   end
 
   @doc """

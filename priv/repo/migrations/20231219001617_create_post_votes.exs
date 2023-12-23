@@ -7,7 +7,7 @@ defmodule Ash.Repo.Migrations.CreatePostVotes do
       add :post_id, references(:posts)
       add :user_id, references(:users)
 
-      timestamps(type: :utc_datetime)
+      timestamps(type: :utc_datetime_usec)
     end
 
     create unique_index(:post_votes, [:post_id, :user_id])

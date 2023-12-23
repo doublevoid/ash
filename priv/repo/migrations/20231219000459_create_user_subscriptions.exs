@@ -6,7 +6,7 @@ defmodule Ash.Repo.Migrations.CreateUserSubscriptions do
       add :community_id, references(:communities)
       add :user_id, references(:users)
 
-      timestamps(type: :utc_datetime)
+      timestamps(type: :utc_datetime_usec)
     end
   end
 end

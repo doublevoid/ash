@@ -9,7 +9,7 @@ defmodule Ash.Repo.Migrations.CreateUsersAuthTables do
       add :username, :"varchar(22)", null: false
       add :hashed_password, :string, null: false
       add :confirmed_at, :naive_datetime
-      timestamps(type: :utc_datetime)
+      timestamps(type: :utc_datetime_usec)
     end
 
     create unique_index(:users, [:email])
@@ -20,7 +20,7 @@ defmodule Ash.Repo.Migrations.CreateUsersAuthTables do
       add :token, :binary, null: false
       add :context, :string, null: false
       add :sent_to, :string
-      timestamps(updated_at: false)
+      timestamps(updated_at: false, type: :utc_datetime_usec)
     end
 
     create index(:users_tokens, [:user_id])

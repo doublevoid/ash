@@ -9,7 +9,7 @@ defmodule Ash.Repo.Migrations.CreatePosts do
       add :user_id, references(:users)
       add :community_id, references(:communities)
 
-      timestamps(type: :utc_datetime)
+      timestamps(type: :utc_datetime_usec)
     end
   end
 end
