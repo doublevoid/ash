@@ -57,8 +57,7 @@ defmodule Ash.Discussions do
     from item in query,
       left_join: uv in ^vote_module,
       on: field(uv, ^id_field) == field(item, :id) and uv.user_id == ^user.id,
-      select_merge: %{user_vote: uv.value},
-      group_by: [uv.id]
+      select_merge: %{user_vote: max(uv.value)}
   end
 
   defp vote_module_for(:post), do: PostVote
@@ -272,8 +271,6 @@ defmodule Ash.Discussions do
         join: c in assoc(p, :community),
         left_join: v in assoc(p, :votes),
         left_join: u in assoc(p, :user),
-        left_join: uv in PostVote,
-        on: uv.post_id == p.id and uv.user_id == ^user.id,
         select: %{
           type: "post",
           id: p.id,
@@ -286,7 +283,7 @@ defmodule Ash.Discussions do
           karma: sum(v.value),
           user_id: p.user_id
         },
-        group_by: [c.id, p.id, u.id, uv.id],
+        group_by: [c.id, p.id, u.id],
         where: p.user_id == ^user.id
       )
       |> maybe_join_user_votes(current_user, :post)
@@ -297,8 +294,6 @@ defmodule Ash.Discussions do
         join: commu in assoc(p, :community),
         left_join: v in assoc(c, :votes),
         left_join: u in assoc(p, :user),
-        left_join: uv in CommentVote,
-        on: uv.comment_id == c.id and uv.user_id == ^user.id,
         select: %{
           type: "comment",
           id: c.id,
@@ -311,7 +306,7 @@ defmodule Ash.Discussions do
           karma: sum(v.value),
           user_id: c.user_id
         },
-        group_by: [c.id, p.id, commu.id, u.id, uv.id],
+        group_by: [c.id, p.id, commu.id, u.id],
         where: c.user_id == ^user.id
       )
       |> maybe_join_user_votes(current_user, :comment)
