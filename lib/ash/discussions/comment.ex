@@ -11,7 +11,7 @@ defmodule Ash.Discussions.Comment do
     belongs_to :post, Ash.Discussions.Post
     belongs_to :parent_comment, Ash.Discussions.Comment
     has_many :votes, Ash.Votes.CommentVote
-    has_many :child_comments, Ash.Discussions.Comment
+    has_many :child_comments, Ash.Discussions.Comment, foreign_key: :parent_comment_id
 
     timestamps(type: :utc_datetime_usec)
   end
