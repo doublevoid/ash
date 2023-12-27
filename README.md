@@ -4,7 +4,7 @@ A forum with subcommunities, reddit-like.
 
 Built using Phoenix LiveView.
 
-What's implemented:
+## What's implemented:
 
 Voting in comments/posts
 
@@ -16,7 +16,7 @@ Infinite scrolling in any timelines (frontpage, communities and user page).
 
 Karma calculation for posts and comments through the vote component.
 
-What is missing:
+## What is missing:
 
 An actual interface for subscribing to communities
 
