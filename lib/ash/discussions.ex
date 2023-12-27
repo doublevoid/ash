@@ -4,6 +4,7 @@ defmodule Ash.Discussions do
   """
 
   import Ecto.Query, warn: false
+  alias Ash.Discussions.Comment
   alias Ash.Votes.CommentVote
   alias Ash.Votes.PostVote
   alias Ash.Accounts.User
@@ -60,6 +61,22 @@ defmodule Ash.Discussions do
       select_merge: %{user_vote: max(uv.value)}
   end
 
+  defp load_post_comments(query) do
+    comments_with_karma_subquery =
+      from c in Comment,
+        left_join: v in assoc(c, :votes),
+        left_join: cc in assoc(c, :child_comments),
+        left_join: ccc in assoc(cc, :child_comments),
+        join: u in assoc(c, :user),
+        join: ucc in assoc(cc, :user),
+        preload: [user: u, child_comments: {cc, user: ucc, child_comments: ccc}],
+        select_merge: %{karma: sum(v.value)},
+        group_by: [c.id, u.id, cc.id, ucc.id, ccc.id]
+
+    from p in query,
+      preload: [comments: ^comments_with_karma_subquery]
+  end
+
   defp vote_module_for(:post), do: PostVote
   defp vote_module_for(:comment), do: CommentVote
 
@@ -88,7 +105,17 @@ defmodule Ash.Discussions do
       |> maybe_join_user_votes(user, :post)
       |> where([p], p.id == ^id)
 
-    Repo.one(query)
+    Repo.one!(query)
+  end
+
+  def get_post_with_comments!(id, user \\ nil) do
+    query =
+      base_post_query()
+      |> maybe_join_user_votes(user, :post)
+      |> load_post_comments()
+      |> where([p], p.id == ^id)
+
+    Repo.one!(query)
   end
 
   defp base_post_query() do
@@ -97,7 +124,6 @@ defmodule Ash.Discussions do
       join: u in assoc(p, :user),
       left_join: v in assoc(p, :votes),
       preload: [community: c, user: u],
-      select: p,
       select_merge: %{karma: sum(v.value)},
       order_by: :id,
       group_by: [p.id, c.id, u.id]

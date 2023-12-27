@@ -11,6 +11,8 @@ defmodule Ash.Discussions.Post do
 
     belongs_to :community, Ash.Communities.Community
     belongs_to :user, Ash.Accounts.User
+
+    has_many :comments, Ash.Discussions.Comment
     has_many :votes, Ash.Votes.PostVote
 
     timestamps(type: :utc_datetime_usec)
