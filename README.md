@@ -8,7 +8,7 @@ Built using Phoenix LiveView.
 
 Voting in comments/posts
 
-Registering/User Accounts through `mix phx.gen auth`
+Registering and logging in for User Accounts through `mix phx.gen auth`
 
 User post history/timeline.
 
