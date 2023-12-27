@@ -9,7 +9,8 @@ import Config
 
 config :ash,
   ecto_repos: [Ash.Repo],
-  generators: [timestamp_type: :utc_datetime]
+  generators: [timestamp_type: :utc_datetime_usec],
+  migration_timestamps: [type: :utc_datetime_usec]
 
 # Configures the endpoint
 config :ash, AshWeb.Endpoint,

@@ -1,0 +1,40 @@
+<.header>
+  Listing User subscriptions
+  <:actions>
+    <.link patch={~p"/user_subscriptions/new"}>
+      <.button>New User subscription</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table
+  id="user_subscriptions"
+  rows={@streams.user_subscriptions}
+  row_click={fn {_id, user_subscription} -> JS.navigate(~p"/user_subscriptions/#{user_subscription}") end}
+>
+  <:action :let={{_id, user_subscription}}>
+    <div class="sr-only">
+      <.link navigate={~p"/user_subscriptions/#{user_subscription}"}>Show</.link>
+    </div>
+    <.link patch={~p"/user_subscriptions/#{user_subscription}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={{id, user_subscription}}>
+    <.link
+      phx-click={JS.push("delete", value: %{id: user_subscription.id}) |> hide("##{id}")}
+      data-confirm="Are you sure?"
+    >
+      Delete
+    </.link>
+  </:action>
+</.table>
+
+<.modal :if={@live_action in [:new, :edit]} id="user_subscription-modal" show on_cancel={JS.patch(~p"/user_subscriptions")}>
+  <.live_component
+    module={AshWeb.UserSubscriptionLive.FormComponent}
+    id={@user_subscription.id || :new}
+    title={@page_title}
+    action={@live_action}
+    user_subscription={@user_subscription}
+    patch={~p"/user_subscriptions"}
+  />
+</.modal>
