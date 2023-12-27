@@ -1,18 +1,33 @@
 # Ash
 
-To start your Phoenix server:
+A forum with subcommunities, reddit-like.
 
-  * Run `mix setup` to install and setup dependencies
-  * Start Phoenix endpoint with `mix phx.server` or inside IEx with `iex -S mix phx.server`
+Built using Phoenix LiveView.
 
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
+What's implemented:
 
-Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
+Voting in comments/posts
 
-## Learn more
+Registering/User Accounts through `mix phx.gen auth`
 
-  * Official website: https://www.phoenixframework.org/
-  * Guides: https://hexdocs.pm/phoenix/overview.html
-  * Docs: https://hexdocs.pm/phoenix
-  * Forum: https://elixirforum.com/c/phoenix-forum
-  * Source: https://github.com/phoenixframework/phoenix
+User post history/timeline.
+
+Infinite scrolling in any timelines (frontpage, communities and user page).
+
+Karma calculation for posts and comments through the vote component.
+
+What is missing:
+
+An actual interface for subscribing to communities
+
+A frontpage that is composed of the communities you've subscribed to.
+
+A custom ordering logic based on karma and post age for the frontpage and /c/all communities.
+
+Making comments to a post and replying to comments (this shouldn't be hard, we only need to add the HTML for it).
+
+Add User "total" karma to their user page.
+
+Caching for posts/comments karma.
+
+MORE TEST COVERAGE!!!
