@@ -70,15 +70,12 @@ defmodule Ash.Discussions do
         preload: [user: u],
         group_by: [c.id, u.id]
 
-    # IO.inspect(map_child_into_parents(Repo.all(all_comments)))
     map_child_into_parents(Repo.all(all_comments))
   end
 
   defp map_child_into_parents(comments) do
-    # Step 1: Index Comments by Parent ID
     parent_map = Enum.group_by(comments, & &1.parent_comment_id)
 
-    # Step 2: Recursively Nest Comments
     nest_comments(parent_map, nil)
   end
 
