@@ -30,13 +30,20 @@
       <%= @post.body %>
     </div>
     <hr />
-    <div class="flex- flex-row" id="post-main" phx-viewport-bottom="load-more" phx-update="stream">
+    <div id="post-main" phx-viewport-bottom="load-more" phx-update="stream">
       <%= for {_, comment} <- @streams.comments do %>
-        <div>
+        <div class="flex flex-row">
+          <.live_component
+            module={AshWeb.Components.VoteComponent}
+            id={"vote-comment-#{comment.id}"}
+            current_user={@current_user}
+            voteable={comment}
+          />
           <.live_component
             module={AshWeb.Components.CommentComponent}
             id={"comment-#{comment.id}"}
             comment={comment}
+            current_user={@current_user}
           />
         </div>
         <hr />

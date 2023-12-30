@@ -18,11 +18,20 @@ defmodule AshWeb.Components.CommentComponent do
         </p>
       </div>
       <%= for comment <- @comment.child_comments do %>
-        <.live_component
-          module={AshWeb.Components.CommentComponent}
-          id={"comment-#{comment.id}"}
-          comment={comment}
-        />
+        <div class="flex flex-row">
+          <.live_component
+            module={AshWeb.Components.VoteComponent}
+            id={"vote-comment-#{comment.id}"}
+            current_user={@current_user}
+            voteable={comment}
+          />
+          <.live_component
+            module={AshWeb.Components.CommentComponent}
+            id={"comment-#{comment.id}"}
+            current_user={@current_user}
+            comment={comment}
+          />
+        </div>
       <% end %>
     </div>
     """
