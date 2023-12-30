@@ -117,6 +117,16 @@ defmodule Ash.Discussions do
     Repo.one!(query)
   end
 
+  def get_post_with_small_comments(id, user \\ nil) do
+    query =
+      base_post_query()
+      |> maybe_join_user_votes(user, :post)
+      |> where([p], p.id == ^id)
+      |> preload_parent_comments
+
+    Repo.one!(query)
+  end
+
   def get_post_with_comments!(id, user \\ nil) do
     query =
       base_post_query()
@@ -125,6 +135,14 @@ defmodule Ash.Discussions do
 
     post = Repo.one!(query)
     %Post{post | comments: load_post_comments()}
+  end
+
+  defp preload_parent_comments(query) do
+    from p in query,
+      left_join: c in assoc(p, :comments),
+      left_join: uc in assoc(c, :user),
+      preload: [comments: {c, user: uc}],
+      group_by: [uc.id, c.id]
   end
 
   defp base_post_query() do
