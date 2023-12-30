@@ -62,20 +62,29 @@ defmodule Ash.Discussions do
   end
 
   defp load_post_comments(query) do
-    comments_with_karma_subquery =
+    initial_query =
       from c in Comment,
         left_join: v in assoc(c, :votes),
-        left_join: cc in assoc(c, :child_comments),
-        left_join: ccc in assoc(cc, :child_comments),
         join: u in assoc(c, :user),
-        join: ucc in assoc(cc, :user),
-        preload: [user: u, child_comments: {cc, user: ucc, child_comments: ccc}],
         select_merge: %{karma: sum(v.value)},
-        group_by: [c.id, u.id, cc.id, ucc.id, ccc.id]
+        preload: [user: u, child_comments: ^build_comments_query(Comment, 7)],
+        group_by: [c.id, u.id],
+        where: is_nil(c.parent_comment_id)
 
     from p in query,
-      preload: [comments: ^comments_with_karma_subquery]
+      preload: [comments: ^initial_query]
   end
+
+  defp build_comments_query(query, depth) when depth > 0 do
+    from c in query,
+      left_join: v in assoc(c, :votes),
+      join: u in assoc(c, :user),
+      select_merge: %{karma: sum(v.value)},
+      preload: [user: u, child_comments: ^build_comments_query(query, depth - 1)],
+      group_by: [c.id, u.id]
+  end
+
+  defp build_comments_query(_, 0), do: []
 
   defp vote_module_for(:post), do: PostVote
   defp vote_module_for(:comment), do: CommentVote
