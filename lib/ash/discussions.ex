@@ -235,6 +235,25 @@ defmodule Ash.Discussions do
   """
   def get_comment!(id), do: Repo.get!(Comment, id)
 
+  def get_comment_with_extra_data!(id, user \\ nil) do
+    query =
+      base_comment_query()
+      |> maybe_join_user_votes(user, :comment)
+      |> where([c], c.id == ^id)
+
+    Repo.one!(query)
+  end
+
+  defp base_comment_query() do
+    from c in Comment,
+      left_join: p in assoc(c, :post),
+      left_join: u in assoc(c, :user),
+      left_join: v in assoc(c, :votes),
+      preload: [user: u, post: p],
+      select_merge: %{karma: sum(v.value)},
+      group_by: [c.id, p.id, u.id]
+  end
+
   @doc """
   Creates a comment.
 

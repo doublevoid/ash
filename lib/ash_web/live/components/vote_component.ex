@@ -54,12 +54,19 @@ defmodule AshWeb.Components.VoteComponent do
   end
 
   @impl true
-  def handle_event("vote", %{"id" => _id, "type" => "post", "value" => value}, socket) do
+  def handle_event("vote", %{"id" => _id, "type" => type, "value" => value}, socket) do
+    create_vote(socket, value, type)
+  end
+
+  defp create_vote(socket, value, type) do
+    IO.inspect("typeeeeepk")
+    IO.inspect(type)
+
     case socket.assigns.current_user do
       %User{} ->
         {:noreply,
          socket
-         |> assign(voteable: handle_vote(socket, value))}
+         |> assign(voteable: handle_vote(socket, value, type))}
 
       _ ->
         {:noreply,
@@ -73,7 +80,11 @@ defmodule AshWeb.Components.VoteComponent do
     Discussions.get_post_with_extra_data!(post.id, user)
   end
 
-  defp handle_vote(socket, value) do
+  defp update_comment_vote(comment, user) do
+    Discussions.get_comment_with_extra_data!(comment.id, user)
+  end
+
+  defp handle_vote(socket, value, "post") do
     {value, _} = Integer.parse(value)
     post = socket.assigns.voteable
     user = socket.assigns.current_user
@@ -91,5 +102,25 @@ defmodule AshWeb.Components.VoteComponent do
     end
 
     update_post_vote(post, user)
+  end
+
+  defp handle_vote(socket, value, "comment") do
+    {value, _} = Integer.parse(value)
+    comment = socket.assigns.voteable
+    user = socket.assigns.current_user
+
+    case comment.user_vote do
+      ^value ->
+        Votes.delete_comment_vote(comment, user)
+
+      _ ->
+        Votes.upsert_comment_vote(%{
+          comment_id: comment.id,
+          user_id: user.id,
+          value: value
+        })
+    end
+
+    update_comment_vote(comment, user)
   end
 end

@@ -1,5 +1,4 @@
 defmodule AshWeb.Components.UserTimelineComponent do
-  alias AshWeb.Components.UserTimelineCommentComponent
   alias Ash.Discussions.Post
   alias Ash.Discussions.Comment
   alias AshWeb.Components.PostComponent

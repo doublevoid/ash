@@ -4,6 +4,7 @@ defmodule Ash.Votes do
   """
 
   import Ecto.Query, warn: false
+  alias Ash.Discussions.Comment
   alias Ash.Discussions.Post
   alias Ash.Accounts.User
   alias Ash.Repo
@@ -39,18 +40,6 @@ defmodule Ash.Votes do
   """
   def get_post_vote!(id), do: Repo.get!(PostVote, id)
 
-  @doc """
-  Creates a post_vote.
-
-  ## Examples
-
-      iex> create_post_vote(%{field: value})
-      {:ok, %PostVote{}}
-
-      iex> create_post_vote(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
   def upsert_post_vote(attrs \\ %{}) do
     %PostVote{}
     |> PostVote.changeset(attrs)
@@ -151,10 +140,13 @@ defmodule Ash.Votes do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_comment_vote(attrs \\ %{}) do
+  def upsert_comment_vote(attrs \\ %{}) do
     %CommentVote{}
     |> CommentVote.changeset(attrs)
-    |> Repo.insert()
+    |> Repo.insert(
+      on_conflict: [set: [value: attrs[:value]]],
+      conflict_target: [:comment_id, :user_id]
+    )
   end
 
   @doc """
@@ -187,8 +179,9 @@ defmodule Ash.Votes do
       {:error, %Ecto.Changeset{}}
 
   """
-  def delete_comment_vote(%CommentVote{} = comment_vote) do
-    Repo.delete(comment_vote)
+  def delete_comment_vote(%Comment{} = comment, %User{} = user) do
+    Repo.get_by(CommentVote, comment_id: comment.id, user_id: user.id)
+    |> Repo.delete()
   end
 
   @doc """
