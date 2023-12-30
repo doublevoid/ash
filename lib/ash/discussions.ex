@@ -61,30 +61,33 @@ defmodule Ash.Discussions do
       select_merge: %{user_vote: max(uv.value)}
   end
 
-  defp load_post_comments(query) do
-    initial_query =
+  defp load_post_comments() do
+    all_comments =
       from c in Comment,
         left_join: v in assoc(c, :votes),
         join: u in assoc(c, :user),
         select_merge: %{karma: sum(v.value)},
-        preload: [user: u, child_comments: ^build_comments_query(Comment, 7)],
-        group_by: [c.id, u.id],
-        where: is_nil(c.parent_comment_id)
+        preload: [user: u],
+        group_by: [c.id, u.id]
 
-    from p in query,
-      preload: [comments: ^initial_query]
+    # IO.inspect(map_child_into_parents(Repo.all(all_comments)))
+    map_child_into_parents(Repo.all(all_comments))
   end
 
-  defp build_comments_query(query, depth) when depth > 0 do
-    from c in query,
-      left_join: v in assoc(c, :votes),
-      join: u in assoc(c, :user),
-      select_merge: %{karma: sum(v.value)},
-      preload: [user: u, child_comments: ^build_comments_query(query, depth - 1)],
-      group_by: [c.id, u.id]
+  defp map_child_into_parents(comments) do
+    # Step 1: Index Comments by Parent ID
+    parent_map = Enum.group_by(comments, & &1.parent_comment_id)
+
+    # Step 2: Recursively Nest Comments
+    nest_comments(parent_map, nil)
   end
 
-  defp build_comments_query(_, 0), do: []
+  defp nest_comments(parent_map, parent_id) do
+    Enum.map(parent_map[parent_id] || [], fn comment ->
+      children = nest_comments(parent_map, comment.id)
+      Map.put(comment, :child_comments, children)
+    end)
+  end
 
   defp vote_module_for(:post), do: PostVote
   defp vote_module_for(:comment), do: CommentVote
@@ -121,10 +124,10 @@ defmodule Ash.Discussions do
     query =
       base_post_query()
       |> maybe_join_user_votes(user, :post)
-      |> load_post_comments()
       |> where([p], p.id == ^id)
 
-    Repo.one!(query)
+    post = Repo.one!(query)
+    %Post{post | comments: load_post_comments()}
   end
 
   defp base_post_query() do
