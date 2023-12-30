@@ -1,4 +1,4 @@
-<div class="flex flex-row">
+<div id="post-main" phx-viewport-bottom="load-more" phx-update="stream" class="flex flex-row">
   <div class="flex mr-2">
     <.live_component
       module={AshWeb.Components.VoteComponent}
@@ -30,8 +30,8 @@
       <%= @post.body %>
     </div>
     <hr />
-    <%= for comment <- @post.comments|>Enum.filter(fn x -> is_nil(x.parent_comment_id) end) do %>
-      <div>
+    <%= for comment <- @comments|>Enum.filter(fn x -> is_nil(x.parent_comment_id) end) do %>
+      <div class="mb-44">
         <.live_component
           module={AshWeb.Components.CommentComponent}
           id={"comment-#{comment.id}"}
