@@ -12,7 +12,7 @@ defmodule AshWeb.PostLive.Show do
          :post,
          Discussions.get_post_with_extra_data!(params["id"], socket.assigns.current_user)
        )
-       |> assign(
+       |> stream(
          :comments,
          Discussions.get_post_comments!(0, 25, params["id"], socket.assigns.current_user)
        )
@@ -25,7 +25,7 @@ defmodule AshWeb.PostLive.Show do
          :post,
          Discussions.get_post_with_extra_data!(params["id"], socket.assigns.current_user)
        )
-       |> assign(
+       |> stream(
          :comments,
          Discussions.get_post_comments!(0, 25, params["id"], socket.assigns.current_user)
        )}
@@ -44,12 +44,12 @@ defmodule AshWeb.PostLive.Show do
     socket =
       socket
       |> update(:offset, fn offset -> offset + socket.assigns.limit end)
-      |> stream(:discussions, stream_new_posts(socket))
+      |> stream(:comments, stream_new_comments(socket))
 
     {:noreply, socket}
   end
 
-  defp stream_new_posts(socket) do
+  defp stream_new_comments(socket) do
     offset = socket.assigns.offset
     limit = socket.assigns.limit
 

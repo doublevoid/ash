@@ -17,14 +17,12 @@ defmodule AshWeb.Components.CommentComponent do
           <%= @comment.body %>
         </p>
       </div>
-      <%= if connected?(@socket) == true do %>
-        <%= for comment <- @comment.child_comments do %>
-          <.live_component
-            module={AshWeb.Components.CommentComponent}
-            id={"comment-#{comment.id}"}
-            comment={comment}
-          />
-        <% end %>
+      <%= for comment <- @comment.child_comments do %>
+        <.live_component
+          module={AshWeb.Components.CommentComponent}
+          id={"comment-#{comment.id}"}
+          comment={comment}
+        />
       <% end %>
     </div>
     """
