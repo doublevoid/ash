@@ -16,15 +16,17 @@ Infinite scrolling in any timelines (frontpage, communities and user page).
 
 Karma calculation for posts and comments through the vote component.
 
+Comments viewable in the post page.
+
+Replies to Comments viewable in the post page.
+
 ## What is missing:
 
-An actual interface for subscribing to communities
+An interface for subscribing to communities
 
 A frontpage that is composed of the communities you've subscribed to.
 
 A custom ordering logic based on karma and post age for the frontpage and /c/all communities.
-
-Make comments viewable in the post page.
 
 Making comments to a post and replying to comments (this shouldn't be hard, we only need to add the HTML for it).
 
