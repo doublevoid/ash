@@ -8,7 +8,7 @@ Built using Phoenix LiveView.
 
 Voting in comments/posts
 
-Registering/User Accounts through `mix phx.gen auth`
+Registering and logging in for User Accounts through `mix phx.gen auth`
 
 User post history/timeline.
 
@@ -16,9 +16,13 @@ Infinite scrolling in any timelines (frontpage, communities and user page).
 
 Karma calculation for posts and comments through the vote component.
 
+Comments viewable in the post page.
+
+Replies to Comments viewable in the post page.
+
 ## What is missing:
 
-An actual interface for subscribing to communities
+An interface for subscribing to communities
 
 A frontpage that is composed of the communities you've subscribed to.
 

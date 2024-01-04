@@ -4,6 +4,7 @@ defmodule Ash.Discussions do
   """
 
   import Ecto.Query, warn: false
+  alias Ash.Discussions.Comment
   alias Ash.Votes.CommentVote
   alias Ash.Votes.PostVote
   alias Ash.Accounts.User
@@ -60,6 +61,37 @@ defmodule Ash.Discussions do
       select_merge: %{user_vote: max(uv.value)}
   end
 
+  defp load_post_comments(offset, limit, id, current_user) do
+    all_comments =
+      from(c in Comment,
+        left_join: v in assoc(c, :votes),
+        join: u in assoc(c, :user),
+        select_merge: %{karma: sum(v.value)},
+        preload: [user: u],
+        group_by: [c.id, u.id],
+        offset: ^offset,
+        limit: ^limit,
+        where: c.post_id == ^id,
+        order_by: c.id
+      )
+      |> maybe_join_user_votes(current_user, :comment)
+
+    map_child_into_parents(Repo.all(all_comments))
+  end
+
+  defp map_child_into_parents(comments) do
+    parent_map = Enum.group_by(comments, & &1.parent_comment_id)
+
+    nest_comments(parent_map, nil)
+  end
+
+  defp nest_comments(parent_map, parent_id) do
+    Enum.map(parent_map[parent_id] || [], fn comment ->
+      children = nest_comments(parent_map, comment.id)
+      Map.put(comment, :child_comments, children)
+    end)
+  end
+
   defp vote_module_for(:post), do: PostVote
   defp vote_module_for(:comment), do: CommentVote
 
@@ -88,7 +120,11 @@ defmodule Ash.Discussions do
       |> maybe_join_user_votes(user, :post)
       |> where([p], p.id == ^id)
 
-    Repo.one(query)
+    Repo.one!(query)
+  end
+
+  def get_post_comments!(offset, limit, id, user \\ nil) do
+    load_post_comments(offset, limit, id, user)
   end
 
   defp base_post_query() do
@@ -97,7 +133,6 @@ defmodule Ash.Discussions do
       join: u in assoc(p, :user),
       left_join: v in assoc(p, :votes),
       preload: [community: c, user: u],
-      select: p,
       select_merge: %{karma: sum(v.value)},
       order_by: :id,
       group_by: [p.id, c.id, u.id]
@@ -199,6 +234,25 @@ defmodule Ash.Discussions do
 
   """
   def get_comment!(id), do: Repo.get!(Comment, id)
+
+  def get_comment_with_extra_data!(id, user \\ nil) do
+    query =
+      base_comment_query()
+      |> maybe_join_user_votes(user, :comment)
+      |> where([c], c.id == ^id)
+
+    Repo.one!(query)
+  end
+
+  defp base_comment_query() do
+    from c in Comment,
+      left_join: p in assoc(c, :post),
+      left_join: u in assoc(c, :user),
+      left_join: v in assoc(c, :votes),
+      preload: [user: u, post: p],
+      select_merge: %{karma: sum(v.value)},
+      group_by: [c.id, p.id, u.id]
+  end
 
   @doc """
   Creates a comment.
