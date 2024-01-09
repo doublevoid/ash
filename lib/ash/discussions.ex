@@ -244,6 +244,23 @@ defmodule Ash.Discussions do
     Repo.one!(query)
   end
 
+  def get_comment_thread!(id, current_user \\ nil) do
+    all_comments =
+      from(c in Comment,
+        left_join: v in assoc(c, :votes),
+        join: u in assoc(c, :user),
+        select_merge: %{karma: sum(v.value)},
+        preload: [user: u],
+        group_by: [c.id, u.id],
+        where: c.id == ^id,
+        or_where: c.parent_comment_id == ^id,
+        order_by: c.id
+      )
+      |> maybe_join_user_votes(current_user, :comment)
+
+    map_child_into_parents(Repo.all(all_comments)) |> Enum.at(0)
+  end
+
   defp base_comment_query() do
     from c in Comment,
       left_join: p in assoc(c, :post),

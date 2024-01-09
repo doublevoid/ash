@@ -74,7 +74,7 @@ defmodule AshWeb.CommentLive.FormComponent do
     case Discussions.create_comment(comment_params) do
       {:ok, comment} ->
         notify_parent({:saved, comment})
-        broadcast_comment(comment)
+        broadcast_comment(comment, socket.assigns[:root_comment_id])
 
         {:noreply,
          socket
@@ -92,12 +92,12 @@ defmodule AshWeb.CommentLive.FormComponent do
 
   defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
 
-  defp broadcast_comment(comment) do
+  defp broadcast_comment(comment, root_comment_id) do
     AshWeb.Endpoint.broadcast_from(
       self(),
       "post_#{comment.post_id}",
       "new_comment",
-      comment
+      {comment, root_comment_id}
     )
   end
 end
