@@ -7,11 +7,6 @@ defmodule AshWeb.CommentLive.FormComponent do
   def render(assigns) do
     ~H"""
     <div>
-      <.header>
-        <%= @title %>
-        <:subtitle>Use this form to manage comment records in your database.</:subtitle>
-      </.header>
-
       <.simple_form
         for={@form}
         id="comment-form"
