@@ -5,6 +5,8 @@ defmodule AshWeb.PostLive.Show do
 
   @impl true
   def mount(params, _session, socket) do
+    AshWeb.Endpoint.subscribe("post_#{params["id"]}")
+
     {:ok,
      socket
      |> assign(
@@ -14,11 +16,14 @@ defmodule AshWeb.PostLive.Show do
      |> stream(
        :comments,
        Discussions.get_post_comments!(0, 25, params["id"], socket.assigns.current_user)
-     )}
+     )
+     |> assign(comment: %Discussions.Comment{})
+     |> assign(:offset, 0)
+     |> assign(:limit, 25)}
   end
 
   @impl true
-  def handle_params(%{"id" => id}, _, socket) do
+  def handle_params(%{"id" => _id}, _, socket) do
     {:noreply,
      socket
      |> assign(:page_title, page_title(socket.assigns.live_action))}
@@ -30,6 +35,19 @@ defmodule AshWeb.PostLive.Show do
       socket
       |> update(:offset, fn offset -> offset + socket.assigns.limit end)
       |> stream(:comments, stream_new_comments(socket))
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_info({AshWeb.CommentLive.FormComponent, {:saved, comment}}, socket) do
+    {:noreply, stream_insert(socket, :comments, comment)}
+  end
+
+  def handle_info(%{event: "new_comment", payload: comment}, socket) do
+    socket =
+      socket
+      |> stream_insert(:comments, comment)
 
     {:noreply, socket}
   end

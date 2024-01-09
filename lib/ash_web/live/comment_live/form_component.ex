@@ -20,6 +20,8 @@ defmodule AshWeb.CommentLive.FormComponent do
         phx-submit="save"
       >
         <.input field={@form[:body]} type="text" label="Body" />
+        <.input field={@form[:post_id]} type="hidden" id="hidden_post_id" value={@post_id} />
+        <.input field={@form[:user_id]} type="hidden" id="hidden_user_id" value={@user.id} />
         <:actions>
           <.button phx-disable-with="Saving...">Save Comment</.button>
         </:actions>
@@ -71,6 +73,7 @@ defmodule AshWeb.CommentLive.FormComponent do
     case Discussions.create_comment(comment_params) do
       {:ok, comment} ->
         notify_parent({:saved, comment})
+        broadcast_comment(comment)
 
         {:noreply,
          socket
@@ -87,4 +90,13 @@ defmodule AshWeb.CommentLive.FormComponent do
   end
 
   defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
+
+  defp broadcast_comment(comment) do
+    AshWeb.Endpoint.broadcast_from(
+      self(),
+      "post_#{comment.post_id}",
+      "new_comment",
+      comment
+    )
+  end
 end

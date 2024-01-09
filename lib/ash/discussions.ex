@@ -267,9 +267,18 @@ defmodule Ash.Discussions do
 
   """
   def create_comment(attrs \\ %{}) do
-    %Comment{}
-    |> Comment.changeset(attrs)
-    |> Repo.insert()
+    comment_changeset =
+      %Comment{}
+      |> Comment.changeset(attrs)
+
+    case Repo.insert(comment_changeset) do
+      {:ok, comment} ->
+        comment = Repo.preload(comment, [:user, :child_comments])
+        {:ok, comment}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
   end
 
   @doc """

@@ -59,9 +59,6 @@ defmodule AshWeb.Components.VoteComponent do
   end
 
   defp create_vote(socket, value, type) do
-    IO.inspect("typeeeeepk")
-    IO.inspect(type)
-
     case socket.assigns.current_user do
       %User{} ->
         {:noreply,

@@ -30,6 +30,20 @@
       <%= @post.body %>
     </div>
     <hr />
+    <div>
+      <%= if @current_user do %>
+        <.live_component
+          module={AshWeb.CommentLive.FormComponent}
+          id={:new}
+          title="yep cock"
+          action={:new}
+          comment={@comment}
+          post_id={@post.id}
+          user={@current_user}
+          patch={~p"/c/#{@post.community.name}/comments/#{@post.id}"}
+        />
+      <% end %>
+    </div>
     <div id="post-main" phx-viewport-bottom="load-more" phx-update="stream">
       <%= for {_, comment} <- @streams.comments do %>
         <div class="flex flex-row">
