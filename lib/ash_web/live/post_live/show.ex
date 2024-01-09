@@ -5,31 +5,16 @@ defmodule AshWeb.PostLive.Show do
 
   @impl true
   def mount(params, _session, socket) do
-    if connected?(socket) == true do
-      {:ok,
-       socket
-       |> assign(
-         :post,
-         Discussions.get_post_with_extra_data!(params["id"], socket.assigns.current_user)
-       )
-       |> stream(
-         :comments,
-         Discussions.get_post_comments!(0, 25, params["id"], socket.assigns.current_user)
-       )
-       |> assign(:offset, 0)
-       |> assign(:limit, 25)}
-    else
-      {:ok,
-       socket
-       |> assign(
-         :post,
-         Discussions.get_post_with_extra_data!(params["id"], socket.assigns.current_user)
-       )
-       |> stream(
-         :comments,
-         Discussions.get_post_comments!(0, 25, params["id"], socket.assigns.current_user)
-       )}
-    end
+    {:ok,
+     socket
+     |> assign(
+       :post,
+       Discussions.get_post_with_extra_data!(params["id"], socket.assigns.current_user)
+     )
+     |> stream(
+       :comments,
+       Discussions.get_post_comments!(0, 25, params["id"], socket.assigns.current_user)
+     )}
   end
 
   @impl true
