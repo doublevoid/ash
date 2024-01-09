@@ -17,6 +17,12 @@ defmodule AshWeb.CommentLive.FormComponent do
         <.input field={@form[:body]} type="text" label="Body" />
         <.input field={@form[:post_id]} type="hidden" id="hidden_post_id" value={@post_id} />
         <.input field={@form[:user_id]} type="hidden" id="hidden_user_id" value={@user.id} />
+        <.input
+          field={@form[:parent_comment_id]}
+          type="hidden"
+          id="hidden_parent_comment_id"
+          value={@parent_comment_id}
+        />
         <:actions>
           <.button phx-disable-with="Saving...">Save Comment</.button>
         </:actions>

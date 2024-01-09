@@ -17,7 +17,6 @@ defmodule AshWeb.PostLive.Show do
        :comments,
        Discussions.get_post_comments!(0, 25, params["id"], socket.assigns.current_user)
      )
-     |> assign(comment: %Discussions.Comment{})
      |> assign(:offset, 0)
      |> assign(:limit, 25)}
   end

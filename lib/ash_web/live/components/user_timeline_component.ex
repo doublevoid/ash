@@ -33,7 +33,7 @@ defmodule AshWeb.Components.UserTimelineComponent do
               current_user={@current_user}
               voteable={struct(Comment, discussion)}
             />
-            <UserTimelineCommentComponent.comment comment={discussion} />
+            <AshWeb.Components.UserTimelineCommentComponent.comment comment={discussion} />
           </div>
         <% end %>
       <% end %>

@@ -37,9 +37,10 @@
           id={:new}
           title="yep cock"
           action={:new}
-          comment={@comment}
+          comment={%Discussions.Comment{}}
           post_id={@post.id}
           user={@current_user}
+          parent_comment_id={nil}
           patch={~p"/c/#{@post.community.name}/comments/#{@post.id}"}
         />
       <% end %>
@@ -57,6 +58,7 @@
             module={AshWeb.Components.CommentComponent}
             id={"comment-#{comment.id}"}
             comment={comment}
+            post={@post}
             current_user={@current_user}
           />
         </div>
