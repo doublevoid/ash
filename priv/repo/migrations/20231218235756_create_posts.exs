@@ -8,6 +8,7 @@ defmodule Ash.Repo.Migrations.CreatePosts do
       add :link, :text
       add :user_id, references(:users)
       add :community_id, references(:communities)
+      add :karma, :integer, default: 0
 
       timestamps(type: :utc_datetime_usec)
     end
