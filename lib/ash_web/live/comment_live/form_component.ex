@@ -9,19 +9,16 @@ defmodule AshWeb.CommentLive.FormComponent do
     <div>
       <.simple_form
         for={@form}
-        id="comment-form"
+        id={"comment-form#{@parent_comment_id}"}
         phx-target={@myself}
         phx-change="validate"
         phx-submit="save"
       >
-        <.input field={@form[:body]} type="text" label="Body" />
-        <.input field={@form[:post_id]} type="hidden" id="hidden_post_id" value={@post_id} />
-        <.input field={@form[:user_id]} type="hidden" id="hidden_user_id" value={@user.id} />
         <.input
-          field={@form[:parent_comment_id]}
-          type="hidden"
-          id="hidden_parent_comment_id"
-          value={@parent_comment_id}
+          field={@form[:body]}
+          type="text"
+          label="Body"
+          id={"comment_body#{@parent_comment_id}"}
         />
         <:actions>
           <.button phx-disable-with="Saving...">Save Comment</.button>
@@ -43,16 +40,20 @@ defmodule AshWeb.CommentLive.FormComponent do
 
   @impl true
   def handle_event("validate", %{"comment" => comment_params}, socket) do
+    params = merge_params(comment_params, socket)
+
     changeset =
       socket.assigns.comment
-      |> Discussions.change_comment(comment_params)
+      |> Discussions.change_comment(params)
       |> Map.put(:action, :validate)
 
     {:noreply, assign_form(socket, changeset)}
   end
 
   def handle_event("save", %{"comment" => comment_params}, socket) do
-    save_comment(socket, socket.assigns.action, comment_params)
+    params = merge_params(comment_params, socket)
+
+    save_comment(socket, socket.assigns.action, params)
   end
 
   defp save_comment(socket, :edit, comment_params) do
@@ -73,7 +74,7 @@ defmodule AshWeb.CommentLive.FormComponent do
   defp save_comment(socket, :new, comment_params) do
     case Discussions.create_comment(comment_params) do
       {:ok, comment} ->
-        notify_parent({:saved, comment})
+        notify_parent({:saved, comment, socket.assigns[:root_comment_id]})
         broadcast_comment(comment, socket.assigns[:root_comment_id])
 
         {:noreply,
@@ -99,5 +100,17 @@ defmodule AshWeb.CommentLive.FormComponent do
       "new_comment",
       {comment, root_comment_id}
     )
+  end
+
+  defp merge_params(comment_params, socket) do
+    post_id = socket.assigns.post_id
+    user_id = socket.assigns.user.id
+    parent_comment_id = socket.assigns[:parent_comment_id]
+
+    Map.merge(comment_params, %{
+      "post_id" => post_id,
+      "user_id" => user_id,
+      "parent_comment_id" => parent_comment_id
+    })
   end
 end

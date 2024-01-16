@@ -47,7 +47,7 @@
     </div>
     <div id="post-main" phx-viewport-bottom="load-more" phx-update="stream">
       <%= for {_, comment} <- @streams.comments do %>
-        <div class="flex flex-row">
+        <div class="flex flex-row" id={"stream-comments-#{comment.id}"} phx-update="stream">
           <.live_component
             module={AshWeb.Components.VoteComponent}
             id={"vote-comment-#{comment.id}"}
