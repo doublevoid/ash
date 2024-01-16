@@ -4,7 +4,7 @@ defmodule Ash.Discussions.Comment do
 
   schema "comments" do
     field :body, :string
-    field :karma, :integer, virtual: true
+    field :karma, :integer
     field :user_vote, :integer, virtual: true
 
     belongs_to :user, Ash.Accounts.User
@@ -19,7 +19,7 @@ defmodule Ash.Discussions.Comment do
   @doc false
   def changeset(comment, attrs) do
     comment
-    |> cast(attrs, [:body, :post_id, :user_id, :parent_comment_id])
+    |> cast(attrs, [:body, :post_id, :user_id, :parent_comment_id, :karma])
     |> validate_required([:body, :post_id, :user_id])
     |> assoc_constraint(:post)
     |> assoc_constraint(:user)

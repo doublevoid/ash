@@ -6,7 +6,7 @@ defmodule Ash.Discussions.Post do
     field :link, :string
     field :title, :string
     field :body, :string
-    field :karma, :integer, virtual: true
+    field :karma, :integer
     field :user_vote, :integer, virtual: true
 
     belongs_to :community, Ash.Communities.Community
@@ -21,7 +21,7 @@ defmodule Ash.Discussions.Post do
   @doc false
   def changeset(post, attrs) do
     post
-    |> cast(attrs, [:title, :body, :link, :community_id, :user_id])
+    |> cast(attrs, [:title, :body, :link, :community_id, :user_id, :karma])
     |> validate_required([:title, :body, :community_id, :user_id])
     |> assoc_constraint(:community)
     |> assoc_constraint(:user)
