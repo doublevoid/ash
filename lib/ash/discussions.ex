@@ -4,6 +4,7 @@ defmodule Ash.Discussions do
   """
 
   import Ecto.Query, warn: false
+  alias Ash.Communities.Community
   alias Ash.Discussions.Comment
   alias Ash.Votes.CommentVote
   alias Ash.Votes.PostVote
@@ -58,7 +59,7 @@ defmodule Ash.Discussions do
     from item in query,
       left_join: uv in ^vote_module,
       on: field(uv, ^id_field) == field(item, :id) and uv.user_id == ^user.id,
-      select_merge: %{user_vote: max(uv.value)}
+      select_merge: %{user_vote: uv.value}
   end
 
   defp load_post_comments(offset, limit, id, current_user) do
@@ -66,9 +67,7 @@ defmodule Ash.Discussions do
       from(c in Comment,
         left_join: v in assoc(c, :votes),
         join: u in assoc(c, :user),
-        select_merge: %{karma: sum(v.value)},
         preload: [user: u],
-        group_by: [c.id, u.id],
         offset: ^offset,
         limit: ^limit,
         where: c.post_id == ^id,
@@ -133,9 +132,7 @@ defmodule Ash.Discussions do
       join: u in assoc(p, :user),
       left_join: v in assoc(p, :votes),
       preload: [community: c, user: u],
-      select_merge: %{karma: sum(v.value)},
-      order_by: :id,
-      group_by: [p.id, c.id, u.id]
+      order_by: :id
     )
   end
 
@@ -173,6 +170,11 @@ defmodule Ash.Discussions do
     post
     |> Post.changeset(attrs)
     |> Repo.update()
+  end
+
+  def update_post_karma(post_id, value) when is_integer(post_id) do
+    from(p in Post, where: p.id == ^post_id)
+    |> Repo.update_all(inc: [karma: value])
   end
 
   @doc """
@@ -244,14 +246,62 @@ defmodule Ash.Discussions do
     Repo.one!(query)
   end
 
+  def get_comment_thread!(id, current_user \\ nil) do
+    query =
+      from c in Comment,
+        left_join: v in assoc(c, :votes),
+        join: u in assoc(c, :user)
+
+    comment_cte_query(query, id, current_user)
+    |> Repo.all()
+    |> map_child_into_parents()
+    |> Enum.at(0)
+  end
+
+  defp comment_cte_query(query, id, user) do
+    query
+    |> recursive_ctes(true)
+    |> with_cte("comment_tree",
+      as:
+        fragment(
+          """
+          SELECT c.id, c.parent_comment_id, c.body, c.karma, c.user_id, c.post_id, c.inserted_at
+          FROM comments AS c
+          WHERE c.id = ?
+          UNION ALL
+          SELECT c.id, c.parent_comment_id, c.body, c.karma, c.user_id, c.post_id, c.inserted_at
+          FROM comments AS c
+          JOIN comment_tree AS ct ON c.parent_comment_id = ct.id
+          """,
+          ^id
+        )
+    )
+    |> join(:inner, [c, v, u], ct in "comment_tree",
+      on: c.id == ct.id or c.id == ct.parent_comment_id
+    )
+    |> join(:inner, [c, v, u, ct], ud in User, on: ud.id == ct.user_id)
+    |> join(:inner, [c, v, u, ct, ud], pd in Post, on: pd.id == ct.post_id)
+    |> join(:inner, [c, v, u, ct, ud, pd], pc in Community, on: pd.community_id == pc.id)
+    |> select([c, v, u, ct, ud, pd, pc], %Comment{
+      id: ct.id,
+      body: ct.body,
+      parent_comment_id: ct.parent_comment_id,
+      user: ud,
+      post: %{pd | community: pc},
+      post_id: ct.post_id,
+      karma: ct.karma,
+      inserted_at: ct.inserted_at
+    })
+    |> distinct([c, v, u, ct], ct.id)
+    |> maybe_join_user_votes(user, :comment)
+  end
+
   defp base_comment_query() do
     from c in Comment,
       left_join: p in assoc(c, :post),
       left_join: u in assoc(c, :user),
       left_join: v in assoc(c, :votes),
-      preload: [user: u, post: p],
-      select_merge: %{karma: sum(v.value)},
-      group_by: [c.id, p.id, u.id]
+      preload: [user: u, post: p]
   end
 
   @doc """
@@ -267,9 +317,18 @@ defmodule Ash.Discussions do
 
   """
   def create_comment(attrs \\ %{}) do
-    %Comment{}
-    |> Comment.changeset(attrs)
-    |> Repo.insert()
+    comment_changeset =
+      %Comment{}
+      |> Comment.changeset(attrs)
+
+    case Repo.insert(comment_changeset) do
+      {:ok, comment} ->
+        comment = Repo.preload(comment, [:user, :child_comments])
+        {:ok, comment}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
   end
 
   @doc """
@@ -288,6 +347,11 @@ defmodule Ash.Discussions do
     comment
     |> Comment.changeset(attrs)
     |> Repo.update()
+  end
+
+  def update_comment_karma(comment_id, value) when is_integer(comment_id) do
+    from(c in Comment, where: c.id == ^comment_id)
+    |> Repo.update_all(inc: [karma: value])
   end
 
   @doc """
@@ -334,10 +398,9 @@ defmodule Ash.Discussions do
           inserted_at: p.inserted_at,
           community: %{c | inserted_at: nil},
           user: %{u | inserted_at: nil},
-          karma: sum(v.value),
+          karma: p.karma,
           user_id: p.user_id
         },
-        group_by: [c.id, p.id, u.id],
         where: p.user_id == ^user.id
       )
       |> maybe_join_user_votes(current_user, :post)
@@ -357,10 +420,9 @@ defmodule Ash.Discussions do
           inserted_at: c.inserted_at,
           community: %{commu | inserted_at: nil},
           user: %{u | inserted_at: nil},
-          karma: sum(v.value),
+          karma: c.karma,
           user_id: c.user_id
         },
-        group_by: [c.id, p.id, commu.id, u.id],
         where: c.user_id == ^user.id
       )
       |> maybe_join_user_votes(current_user, :comment)

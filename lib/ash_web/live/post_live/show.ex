@@ -5,35 +5,24 @@ defmodule AshWeb.PostLive.Show do
 
   @impl true
   def mount(params, _session, socket) do
-    if connected?(socket) == true do
-      {:ok,
-       socket
-       |> assign(
-         :post,
-         Discussions.get_post_with_extra_data!(params["id"], socket.assigns.current_user)
-       )
-       |> stream(
-         :comments,
-         Discussions.get_post_comments!(0, 25, params["id"], socket.assigns.current_user)
-       )
-       |> assign(:offset, 0)
-       |> assign(:limit, 25)}
-    else
-      {:ok,
-       socket
-       |> assign(
-         :post,
-         Discussions.get_post_with_extra_data!(params["id"], socket.assigns.current_user)
-       )
-       |> stream(
-         :comments,
-         Discussions.get_post_comments!(0, 25, params["id"], socket.assigns.current_user)
-       )}
-    end
+    AshWeb.Endpoint.subscribe("post_#{params["id"]}")
+
+    {:ok,
+     socket
+     |> assign(
+       :post,
+       Discussions.get_post_with_extra_data!(params["id"], socket.assigns.current_user)
+     )
+     |> stream(
+       :comments,
+       Discussions.get_post_comments!(0, 25, params["id"], socket.assigns.current_user)
+     )
+     |> assign(:offset, 0)
+     |> assign(:limit, 25)}
   end
 
   @impl true
-  def handle_params(%{"id" => id}, _, socket) do
+  def handle_params(%{"id" => _id}, _, socket) do
     {:noreply,
      socket
      |> assign(:page_title, page_title(socket.assigns.live_action))}
@@ -45,6 +34,43 @@ defmodule AshWeb.PostLive.Show do
       socket
       |> update(:offset, fn offset -> offset + socket.assigns.limit end)
       |> stream(:comments, stream_new_comments(socket))
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_info({AshWeb.CommentLive.FormComponent, {:saved, comment, nil}}, socket) do
+    socket =
+      socket
+      |> stream_insert(:comments, comment)
+
+    {:noreply, socket}
+  end
+
+  def handle_info({AshWeb.CommentLive.FormComponent, {:saved, _comment, root_comment_id}}, socket) do
+    root_thread = Discussions.get_comment_thread!(root_comment_id, socket.assigns.current_user)
+
+    socket =
+      socket
+      |> stream_insert(:comments, root_thread)
+
+    {:noreply, socket}
+  end
+
+  def handle_info(%{event: "new_comment", payload: {comment, nil}}, socket) do
+    socket =
+      socket
+      |> stream_insert(:comments, comment)
+
+    {:noreply, socket}
+  end
+
+  def handle_info(%{event: "new_comment", payload: {_comment, root_comment_id}}, socket) do
+    root_thread = Discussions.get_comment_thread!(root_comment_id, socket.assigns.current_user)
+
+    socket =
+      socket
+      |> stream_insert(:comments, root_thread)
 
     {:noreply, socket}
   end

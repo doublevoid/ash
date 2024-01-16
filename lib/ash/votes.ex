@@ -4,6 +4,7 @@ defmodule Ash.Votes do
   """
 
   import Ecto.Query, warn: false
+  alias Ash.Discussions
   alias Ash.Discussions.Comment
   alias Ash.Discussions.Post
   alias Ash.Accounts.User
@@ -41,13 +42,34 @@ defmodule Ash.Votes do
   def get_post_vote!(id), do: Repo.get!(PostVote, id)
 
   def upsert_post_vote(attrs \\ %{}) do
-    %PostVote{}
-    |> PostVote.changeset(attrs)
-    |> Repo.insert(
-      on_conflict: [set: [value: attrs[:value]]],
-      conflict_target: [:post_id, :user_id]
-    )
+    existing_post_vote =
+      Repo.get_by(PostVote, user_id: attrs[:user_id], post_id: attrs[:post_id])
+
+    post_vote =
+      %PostVote{}
+      |> PostVote.changeset(attrs)
+      |> Repo.insert(
+        on_conflict: [set: [value: attrs[:value]]],
+        conflict_target: [:post_id, :user_id]
+      )
+
+    karma_change =
+      if existing_post_vote do
+        calculate_karma_change(existing_post_vote.value, attrs[:value])
+      else
+        calculate_karma_change(nil, attrs[:value])
+      end
+
+    Discussions.update_post_karma(attrs[:post_id], karma_change)
+
+    post_vote
   end
+
+  defp calculate_karma_change(1, -1), do: -2
+
+  defp calculate_karma_change(-1, 1), do: 2
+
+  defp calculate_karma_change(nil, new_value), do: new_value
 
   @doc """
   Updates a post_vote.
@@ -80,8 +102,11 @@ defmodule Ash.Votes do
 
   """
   def delete_post_vote(%Post{} = post, %User{} = user) do
-    Repo.get_by(PostVote, post_id: post.id, user_id: user.id)
-    |> Repo.delete()
+    vote = Repo.get_by(PostVote, post_id: post.id, user_id: user.id)
+
+    Repo.delete(vote)
+
+    Discussions.update_post_karma(post.id, -vote.value)
   end
 
   @doc """
@@ -141,12 +166,27 @@ defmodule Ash.Votes do
 
   """
   def upsert_comment_vote(attrs \\ %{}) do
-    %CommentVote{}
-    |> CommentVote.changeset(attrs)
-    |> Repo.insert(
-      on_conflict: [set: [value: attrs[:value]]],
-      conflict_target: [:comment_id, :user_id]
-    )
+    existing_comment_vote =
+      Repo.get_by(CommentVote, user_id: attrs[:user_id], comment_id: attrs[:comment_id])
+
+    post_vote =
+      %CommentVote{}
+      |> CommentVote.changeset(attrs)
+      |> Repo.insert(
+        on_conflict: [set: [value: attrs[:value]]],
+        conflict_target: [:comment_id, :user_id]
+      )
+
+    karma_change =
+      if existing_comment_vote do
+        calculate_karma_change(existing_comment_vote.value, attrs[:value])
+      else
+        calculate_karma_change(nil, attrs[:value])
+      end
+
+    Discussions.update_comment_karma(attrs[:comment_id], karma_change)
+
+    post_vote
   end
 
   @doc """
@@ -180,8 +220,11 @@ defmodule Ash.Votes do
 
   """
   def delete_comment_vote(%Comment{} = comment, %User{} = user) do
-    Repo.get_by(CommentVote, comment_id: comment.id, user_id: user.id)
-    |> Repo.delete()
+    vote = Repo.get_by(CommentVote, comment_id: comment.id, user_id: user.id)
+
+    Repo.delete(vote)
+
+    Discussions.update_comment_karma(comment.id, -vote.value)
   end
 
   @doc """
