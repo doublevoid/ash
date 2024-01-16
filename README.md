@@ -6,9 +6,9 @@ Built using Phoenix LiveView.
 
 ## What's implemented:
 
-Voting in comments/posts
+Voting in comments/posts.
 
-Registering and logging in for User Accounts through `mix phx.gen auth`
+Registering and logging in for User Accounts through `mix phx.gen auth`.
 
 User post history/timeline.
 
@@ -22,11 +22,11 @@ Replies to Comments viewable in the post page.
 
 Making comments to a post and replying to comments.
 
-Live comments through PubSub
+Live comments through PubSub.
 
 ## What is missing:
 
-An interface for subscribing to communities
+An interface for subscribing to communities.
 
 A frontpage that is composed of the communities you've subscribed to.
 
@@ -36,4 +36,4 @@ Add User "total" karma to their user page.
 
 Caching for posts/comments karma.
 
-MORE TEST COVERAGE!!!
+Test coverage.
