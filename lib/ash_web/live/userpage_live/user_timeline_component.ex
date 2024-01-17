@@ -1,4 +1,4 @@
-defmodule AshWeb.Components.UserTimelineComponent do
+defmodule AshWeb.UserPageLive.UserTimelineComponent do
   alias Ash.Discussions.Post
   alias Ash.Discussions.Comment
   alias AshWeb.Components.PostComponent
@@ -36,6 +36,7 @@ defmodule AshWeb.Components.UserTimelineComponent do
             <AshWeb.Components.UserTimelineCommentComponent.comment comment={discussion} />
           </div>
         <% end %>
+        <hr />
       <% end %>
     </div>
     """
