@@ -20,10 +20,8 @@ defmodule AshWeb.PostLive.FormComponent do
         phx-submit="save"
       >
         <.input field={@form[:title]} type="text" label="Title" />
-        <.input field={@form[:body]} type="text" label="Body" />
+        <.input field={@form[:body]} type="textarea" label="Body" />
         <.input field={@form[:link]} type="text" label="Link" />
-        <.input field={@form[:community_id]} type="text" label="Community" />
-        <.input field={@form[:user_id]} type="text" label="User" />
         <:actions>
           <.button phx-disable-with="Saving...">Save Post</.button>
         </:actions>
@@ -44,16 +42,20 @@ defmodule AshWeb.PostLive.FormComponent do
 
   @impl true
   def handle_event("validate", %{"post" => post_params}, socket) do
+    params = merge_params(post_params, socket)
+
     changeset =
       socket.assigns.post
-      |> Discussions.change_post(post_params)
+      |> Discussions.change_post(params)
       |> Map.put(:action, :validate)
 
     {:noreply, assign_form(socket, changeset)}
   end
 
   def handle_event("save", %{"post" => post_params}, socket) do
-    save_post(socket, socket.assigns.action, post_params)
+    params = merge_params(post_params, socket)
+
+    save_post(socket, socket.assigns.action, params)
   end
 
   defp save_post(socket, :edit, post_params) do
@@ -91,4 +93,14 @@ defmodule AshWeb.PostLive.FormComponent do
   end
 
   defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
+
+  defp merge_params(post_params, socket) do
+    community_id = socket.assigns.community.id
+    user_id = socket.assigns.user.id
+
+    Map.merge(post_params, %{
+      "community_id" => community_id,
+      "user_id" => user_id
+    })
+  end
 end

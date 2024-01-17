@@ -86,7 +86,7 @@ defmodule AshWeb.Router do
       live "/", FrontpageLive.Show, :show
       live "/c/:name", CommunityLive.Show, :show
       live "/posts", PostLive.Index, :index
-      live "/posts/new", PostLive.Index, :new
+      live "/c/:name/new_post", CommunityLive.Show, :new
       live "/c/:name/comments/:id", PostLive.Show, :show
       live "/u/:username", UserpageLive.Show, :show
     end

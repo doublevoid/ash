@@ -1,12 +1,20 @@
 defmodule AshWeb.CommunityLive.Show do
+  alias Ash.Discussions.Post
   use AshWeb, :live_view
 
   alias Ash.Communities
   alias Ash.Discussions
 
   @impl true
-  def mount(_params, _session, socket) do
-    {:ok, socket}
+  def mount(params, _session, socket) do
+    community = Communities.get_community_by_name!(params["name"])
+
+    {:ok,
+     socket
+     |> assign(:community, community)
+     |> stream(:posts, Discussions.posts_timeline(0, 25, community.name))
+     |> assign(:offset, 0)
+     |> assign(:limit, 25)}
   end
 
   @impl true
@@ -20,15 +28,17 @@ defmodule AshWeb.CommunityLive.Show do
     |> assign(:community, Communities.get_community_by_name!(name))
   end
 
+  defp apply_action(socket, :new, _params) do
+    socket
+    |> assign(:page_title, "New Post")
+    |> assign(:post, %Post{})
+  end
+
   defp apply_action(socket, :show, %{"name" => name}) do
     community = Communities.get_community_by_name!(name)
 
     socket
-    |> assign(:page_title, page_title(socket.assigns.live_action, community))
-    |> assign(:community, community)
-    |> stream(:posts, Discussions.posts_timeline(0, 25, community.name))
-    |> assign(:offset, 0)
-    |> assign(:limit, 25)
+    |> assign(:page_title, "/c/#{community.name}")
   end
 
   @impl true
@@ -38,6 +48,11 @@ defmodule AshWeb.CommunityLive.Show do
       |> update(:offset, fn offset -> offset + socket.assigns.limit end)
       |> stream(:posts, stream_new_posts(socket))
 
+    IO.inspect("offset after stream")
+    IO.inspect(socket.assigns.offset)
+    IO.inspect("limit after stream")
+    IO.inspect(socket.assigns.limit)
+
     {:noreply, socket}
   end
 
@@ -46,6 +61,4 @@ defmodule AshWeb.CommunityLive.Show do
     limit = socket.assigns.limit
     Discussions.posts_timeline(offset, limit, socket.assigns.community.name)
   end
-
-  defp page_title(:show, community), do: "/c/#{community.name}"
 end

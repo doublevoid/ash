@@ -24,9 +24,12 @@ Making comments to a post and replying to comments.
 
 Live comments through PubSub.
 
+An interface for subscribing to communities.
+
+Making posts in a community
+
 ## What is missing:
 
-An interface for subscribing to communities.
 
 A frontpage that is composed of the communities you've subscribed to.
 
