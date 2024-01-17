@@ -7,7 +7,7 @@ defmodule AshWeb.Components.CommentComponent do
     ~H"""
     <div class="flex flex-col">
       <div class="flex flex-row text-sm">
-        <.link href={~p"/u/#{@comment.user.username}"} class="mr-1">
+        <.link patch={~p"/u/#{@comment.user.username}"} class="mr-1">
           /u/<%= @comment.user.username %>
         </.link>
         <p>
