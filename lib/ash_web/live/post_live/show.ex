@@ -39,6 +39,21 @@ defmodule AshWeb.PostLive.Show do
   end
 
   @impl true
+  def handle_event("load-replies", %{"value" => value}, socket) do
+    root_thread =
+      Discussions.get_comment_thread!(
+        String.to_integer(value),
+        socket.assigns.current_user
+      )
+
+    socket =
+      socket
+      |> stream_insert(:comments, root_thread)
+
+    {:noreply, socket}
+  end
+
+  @impl true
   def handle_info({AshWeb.CommentLive.FormComponent, {:saved, comment, nil}}, socket) do
     socket =
       socket
@@ -47,8 +62,8 @@ defmodule AshWeb.PostLive.Show do
     {:noreply, socket}
   end
 
-  def handle_info({AshWeb.CommentLive.FormComponent, {:saved, _comment, root_comment_id}}, socket) do
-    root_thread = Discussions.get_comment_thread!(root_comment_id, socket.assigns.current_user)
+  def handle_info({AshWeb.CommentLive.FormComponent, {:saved, _comment, root_comment}}, socket) do
+    root_thread = Discussions.get_comment_thread!(root_comment.id, socket.assigns.current_user)
 
     socket =
       socket
@@ -65,8 +80,8 @@ defmodule AshWeb.PostLive.Show do
     {:noreply, socket}
   end
 
-  def handle_info(%{event: "new_comment", payload: {_comment, root_comment_id}}, socket) do
-    root_thread = Discussions.get_comment_thread!(root_comment_id, socket.assigns.current_user)
+  def handle_info(%{event: "new_comment", payload: {_comment, root_comment}}, socket) do
+    root_thread = Discussions.get_comment_thread!(root_comment.id, socket.assigns.current_user)
 
     socket =
       socket
