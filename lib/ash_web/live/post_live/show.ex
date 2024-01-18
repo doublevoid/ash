@@ -15,10 +15,10 @@ defmodule AshWeb.PostLive.Show do
      )
      |> stream(
        :comments,
-       Discussions.get_post_comments!(0, 25, params["id"], socket.assigns.current_user)
+       Discussions.get_post_comments!(0, 100, params["id"], socket.assigns.current_user)
      )
      |> assign(:offset, 0)
-     |> assign(:limit, 25)}
+     |> assign(:limit, 100)}
   end
 
   @impl true
