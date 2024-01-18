@@ -2,7 +2,8 @@ defmodule AshWeb.Components.CommentComponent do
   use AshWeb, :live_component
 
   def render(assigns) do
-    root_comment_id = assigns[:root_comment_id] || assigns.comment.id
+    assigns =
+      assign(assigns, :local_root_comment_id, assigns[:root_comment_id] || assigns.comment.id)
 
     ~H"""
     <div class="flex flex-col">
@@ -32,7 +33,7 @@ defmodule AshWeb.Components.CommentComponent do
             post_id={@comment.post_id}
             user={@current_user}
             parent_comment_id={@comment.id}
-            root_comment_id={root_comment_id}
+            root_comment_id={assigns.local_root_comment_id}
             patch={~p"/c/#{@post.community.name}/comments/#{@comment.post_id}"}
           />
         <% end %>
@@ -51,7 +52,7 @@ defmodule AshWeb.Components.CommentComponent do
             current_user={@current_user}
             comment={comment}
             post={@post}
-            root_comment_id={root_comment_id}
+            root_comment_id={assigns.local_root_comment_id}
           />
         </div>
       <% end %>
