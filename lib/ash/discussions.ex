@@ -50,9 +50,22 @@ defmodule Ash.Discussions do
     )
   end
 
-  defp maybe_join_user_votes(query, nil, _), do: query
+  defp maybe_join_user_votes(query, user, type, group \\ false)
 
-  defp maybe_join_user_votes(query, %User{} = user, type) do
+  defp maybe_join_user_votes(query, nil, _, _), do: query
+
+  defp maybe_join_user_votes(query, %User{} = user, type, group) when group do
+    vote_module = vote_module_for(type)
+    id_field = id_field_for(type)
+
+    from item in query,
+      left_join: uv in ^vote_module,
+      on: field(uv, ^id_field) == field(item, :id) and uv.user_id == ^user.id,
+      select_merge: %{user_vote: uv.value},
+      group_by: [uv.value]
+  end
+
+  defp maybe_join_user_votes(query, %User{} = user, type, _group) do
     vote_module = vote_module_for(type)
     id_field = id_field_for(type)
 
@@ -66,14 +79,18 @@ defmodule Ash.Discussions do
     all_comments =
       from(c in Comment,
         left_join: v in assoc(c, :votes),
+        left_join: r in Comment,
+        on: r.parent_comment_id == c.id,
         join: u in assoc(c, :user),
         preload: [user: u],
         offset: ^offset,
         limit: ^limit,
         where: c.post_id == ^id,
-        order_by: c.id
+        select: %{c | has_replies: count(r.id)},
+        order_by: c.id,
+        group_by: [c.id, u.id]
       )
-      |> maybe_join_user_votes(current_user, :comment)
+      |> maybe_join_user_votes(current_user, :comment, true)
 
     map_child_into_parents(Repo.all(all_comments))
   end

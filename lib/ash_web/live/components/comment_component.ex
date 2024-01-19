@@ -3,7 +3,7 @@ defmodule AshWeb.Components.CommentComponent do
 
   def render(assigns) do
     assigns =
-      assign(assigns, :local_root_comment_id, assigns[:root_comment_id] || assigns.comment.id)
+      assign(assigns, :local_root_comment, assigns[:root_comment] || assigns.comment)
 
     ~H"""
     <div class="flex flex-col">
@@ -19,9 +19,16 @@ defmodule AshWeb.Components.CommentComponent do
         <p>
           <%= @comment.body %>
         </p>
-        <button phx-click={JS.show(to: "#reply-comment-#{@comment.id}")}>
-          reply
-        </button>
+        <div class="flex flex-row gap-2">
+          <button phx-click={JS.show(to: "#reply-comment-#{@comment.id}")}>
+            reply
+          </button>
+          <%= if is_integer(@comment.has_replies) && @comment.has_replies > 0 && Enum.count(@comment.child_comments) != @comment.has_replies do %>
+            <button class="text-xs" phx-click="load-replies" value={assigns.local_root_comment.id}>
+              <%= "load (#{@comment.has_replies}) replies" %>
+            </button>
+          <% end %>
+        </div>
       </div>
       <div id={"reply-comment-#{@comment.id}"} class="hidden">
         <%= if @current_user do %>
@@ -33,7 +40,7 @@ defmodule AshWeb.Components.CommentComponent do
             post_id={@comment.post_id}
             user={@current_user}
             parent_comment_id={@comment.id}
-            root_comment_id={assigns.local_root_comment_id}
+            root_comment={assigns.local_root_comment}
             patch={~p"/c/#{@post.community.name}/comments/#{@comment.post_id}"}
           />
         <% end %>
@@ -52,7 +59,7 @@ defmodule AshWeb.Components.CommentComponent do
             current_user={@current_user}
             comment={comment}
             post={@post}
-            root_comment_id={assigns.local_root_comment_id}
+            root_comment={assigns.local_root_comment}
           />
         </div>
       <% end %>
