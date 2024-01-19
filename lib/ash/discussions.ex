@@ -247,19 +247,14 @@ defmodule Ash.Discussions do
   end
 
   def get_comment_thread!(id, current_user \\ nil) do
-    query =
-      from c in Comment,
-        left_join: v in assoc(c, :votes),
-        join: u in assoc(c, :user)
-
-    comment_cte_query(query, id, current_user)
+    comment_cte_query(id, current_user)
     |> Repo.all()
     |> map_child_into_parents()
     |> Enum.at(0)
   end
 
-  defp comment_cte_query(query, id, user) do
-    query
+  defp comment_cte_query(id, user) do
+    {"comment_tree", Comment}
     |> recursive_ctes(true)
     |> with_cte("comment_tree",
       as:
@@ -276,23 +271,20 @@ defmodule Ash.Discussions do
           ^id
         )
     )
-    |> join(:inner, [c, v, u], ct in "comment_tree",
-      on: c.id == ct.id or c.id == ct.parent_comment_id
-    )
-    |> join(:inner, [c, v, u, ct], ud in User, on: ud.id == ct.user_id)
-    |> join(:inner, [c, v, u, ct, ud], pd in Post, on: pd.id == ct.post_id)
-    |> join(:inner, [c, v, u, ct, ud, pd], pc in Community, on: pd.community_id == pc.id)
-    |> select([c, v, u, ct, ud, pd, pc], %Comment{
-      id: ct.id,
-      body: ct.body,
-      parent_comment_id: ct.parent_comment_id,
+    |> join(:inner, [c], ud in User, on: ud.id == c.user_id)
+    |> join(:inner, [c, ud], pd in Post, on: pd.id == c.post_id)
+    |> join(:inner, [c, ud, pd], pc in Community, on: pd.community_id == pc.id)
+    |> select([c, ud, pd, pc], %Comment{
+      id: c.id,
+      body: c.body,
+      parent_comment_id: c.parent_comment_id,
       user: ud,
       post: %{pd | community: pc},
-      post_id: ct.post_id,
-      karma: ct.karma,
-      inserted_at: ct.inserted_at
+      post_id: c.post_id,
+      karma: c.karma,
+      inserted_at: c.inserted_at
     })
-    |> distinct([c, v, u, ct], ct.id)
+    |> order_by([c], c.inserted_at)
     |> maybe_join_user_votes(user, :comment)
   end
 
