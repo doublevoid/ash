@@ -24,9 +24,9 @@ defmodule AshWeb.Components.CommentComponent do
           <button phx-click={JS.show(to: "#reply-comment-#{@comment.id}")}>
             reply
           </button>
-          <%= if is_integer(@comment.has_replies) && @comment.has_replies > 0 && @child_comments_count != @comment.has_replies do %>
+          <%= if is_integer(@comment.reply_count) && @comment.reply_count > 0 && @child_comments_count != @comment.reply_count do %>
             <button class="text-xs" phx-click="load-replies" value={@local_root_comment.id}>
-              <%= "load (#{@comment.has_replies - @child_comments_count}) replies" %>
+              <%= "load (#{@comment.reply_count - @child_comments_count}) replies" %>
             </button>
           <% end %>
         </div>

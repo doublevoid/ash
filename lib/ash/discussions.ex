@@ -86,7 +86,7 @@ defmodule Ash.Discussions do
         offset: ^offset,
         limit: ^limit,
         where: c.post_id == ^id,
-        select: %{c | has_replies: count(r.id)},
+        select: %{c | reply_count: count(r.id)},
         order_by: c.id,
         group_by: [c.id, u.id]
       )

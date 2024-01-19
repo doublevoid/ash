@@ -6,7 +6,7 @@ defmodule Ash.Discussions.Comment do
     field :body, :string
     field :karma, :integer
     field :user_vote, :integer, virtual: true
-    field :has_replies, :integer, virtual: true
+    field :reply_count, :integer, virtual: true
 
     belongs_to :user, Ash.Accounts.User
     belongs_to :post, Ash.Discussions.Post
