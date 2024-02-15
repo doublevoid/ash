@@ -190,8 +190,7 @@ defmodule Ash.Discussions do
 
   @spec update_discussion_karma(Post | Comment, integer(), integer()) :: any()
   def update_discussion_karma(module, discussion_id, value) when is_integer(discussion_id) do
-    from(d in module, where: d.id == ^discussion_id)
-    |> Repo.update_all(inc: [karma: value])
+    from(d in module, where: d.id == ^discussion_id, update: [inc: [karma: ^value]])
   end
 
   @doc """

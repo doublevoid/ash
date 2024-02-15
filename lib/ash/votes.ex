@@ -4,6 +4,7 @@ defmodule Ash.Votes do
   """
 
   import Ecto.Query, warn: false
+  alias Ecto.Multi
   alias Ash.Votes.CommentVote
   alias Ash.Discussions
   alias Ash.Discussions.Comment
@@ -74,7 +75,6 @@ defmodule Ash.Votes do
 
   """
   def delete_post_vote(%Post{} = post, %User{} = user), do: delete_vote(PostVote, post, user)
-
 
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking post_vote changes.
@@ -162,7 +162,8 @@ defmodule Ash.Votes do
       {:error, %Ecto.Changeset{}}
 
   """
-  def delete_comment_vote(%Comment{} = comment, %User{} = user), do: delete_vote(CommentVote, comment, user)
+  def delete_comment_vote(%Comment{} = comment, %User{} = user),
+    do: delete_vote(CommentVote, comment, user)
 
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking comment_vote changes.
@@ -187,17 +188,27 @@ defmodule Ash.Votes do
     existing_vote =
       Repo.get_by(module, user_id: attrs[:user_id], "#{foreign_column}": attrs[foreign_column])
 
+    karma_change = calculate_karma_change(existing_vote, attrs[:value])
+
     vote =
-      struct(module)
-      |> module.changeset(attrs)
-      |> Repo.insert(
+      Multi.new()
+      |> Multi.update_all(
+        :update_all,
+        Discussions.update_discussion_karma(
+          parent_module,
+          attrs[foreign_column],
+          karma_change
+        ),
+        []
+      )
+      |> Multi.insert(
+        :insert,
+        struct(module)
+        |> module.changeset(attrs),
         on_conflict: [set: [value: attrs[:value]]],
         conflict_target: [foreign_column, :user_id]
       )
-
-    karma_change = calculate_karma_change(existing_vote, attrs[:value])
-
-    Discussions.update_discussion_karma(parent_module, attrs[foreign_column], karma_change)
+      |> Repo.transaction()
 
     vote
   end
