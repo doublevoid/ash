@@ -10,7 +10,6 @@ defmodule Ash.Discussions do
   alias Ash.Votes.PostVote
   alias Ash.Accounts.User
   alias Ash.Repo
-
   alias Ash.Discussions.Post
 
   @doc """
@@ -189,8 +188,9 @@ defmodule Ash.Discussions do
     |> Repo.update()
   end
 
-  def update_post_karma(post_id, value) when is_integer(post_id) do
-    from(p in Post, where: p.id == ^post_id)
+  @spec update_discussion_karma(Post | Comment, integer(), integer()) :: any()
+  def update_discussion_karma(module, discussion_id, value) when is_integer(discussion_id) do
+    from(d in module, where: d.id == ^discussion_id)
     |> Repo.update_all(inc: [karma: value])
   end
 
@@ -222,8 +222,6 @@ defmodule Ash.Discussions do
   def change_post(%Post{} = post, attrs \\ %{}) do
     Post.changeset(post, attrs)
   end
-
-  alias Ash.Discussions.Comment
 
   @doc """
   Returns the list of comments.
@@ -356,11 +354,6 @@ defmodule Ash.Discussions do
     comment
     |> Comment.changeset(attrs)
     |> Repo.update()
-  end
-
-  def update_comment_karma(comment_id, value) when is_integer(comment_id) do
-    from(c in Comment, where: c.id == ^comment_id)
-    |> Repo.update_all(inc: [karma: value])
   end
 
   @doc """
