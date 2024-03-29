@@ -23,8 +23,10 @@ defmodule AshWeb do
     quote do
       use Phoenix.Router, helpers: false
 
-      # Import common connection and controller functions to use in pipelines
+      # Import common connection and controller
+      #  functions to use in pipelines
       import Plug.Conn
+
       import Phoenix.Controller
       import Phoenix.LiveView.Router
     end

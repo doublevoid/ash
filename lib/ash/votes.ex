@@ -4,7 +4,6 @@ defmodule Ash.Votes do
   """
 
   import Ecto.Query, warn: false
-  alias Ecto.Multi
   alias Ash.Votes.CommentVote
   alias Ash.Discussions
   alias Ash.Discussions.Comment
@@ -190,25 +189,17 @@ defmodule Ash.Votes do
 
     karma_change = calculate_karma_change(existing_vote, attrs[:value])
 
-    vote =
-      Multi.new()
-      |> Multi.update_all(
-        :update_all,
-        Discussions.update_discussion_karma(
-          parent_module,
-          attrs[foreign_column],
-          karma_change
-        ),
-        []
-      )
-      |> Multi.insert(
-        :insert,
+    {:ok, vote} =
+      Repo.transaction(fn ->
+        Discussions.update_discussion_karma(parent_module, attrs[foreign_column], karma_change)
+
         struct(module)
-        |> module.changeset(attrs),
-        on_conflict: [set: [value: attrs[:value]]],
-        conflict_target: [foreign_column, :user_id]
-      )
-      |> Repo.transaction()
+        |> module.changeset(attrs)
+        |> Repo.insert(
+          on_conflict: [set: [value: attrs[:value]]],
+          conflict_target: [foreign_column, :user_id]
+        )
+      end)
 
     vote
   end
@@ -216,11 +207,15 @@ defmodule Ash.Votes do
   defp delete_vote(module, discussion, user) do
     {foreign_column, parent_module} = vote_foreign(module)
 
-    vote = Repo.get_by(module, "#{foreign_column}": discussion.id, user_id: user.id)
+    {:ok, deleted_vote} =
+      Repo.transaction(fn ->
+        vote = Repo.get_by(module, "#{foreign_column}": discussion.id, user_id: user.id)
+        Discussions.update_discussion_karma(parent_module, discussion.id, -vote.value)
 
-    Repo.delete(vote)
+        Repo.delete(vote)
+      end)
 
-    Discussions.update_discussion_karma(parent_module, discussion.id, -vote.value)
+    deleted_vote
   end
 
   defp calculate_karma_change(%{value: 1}, -1), do: -2

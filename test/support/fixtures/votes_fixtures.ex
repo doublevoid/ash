@@ -33,7 +33,7 @@ defmodule Ash.VotesFixtures do
         comment_id: DiscussionsFixtures.comment_fixture().id,
         user_id: AccountsFixtures.user_fixture().id
       })
-      |> Ash.Votes.create_comment_vote()
+      |> Ash.Votes.upsert_comment_vote()
 
     comment_vote
   end
