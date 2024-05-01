@@ -5,11 +5,10 @@
       <.button>New Post</.button>
     </.link>
   </:actions>
+  <:subtitle>
+    <%= "#{@community.description}" %>
+  </:subtitle>
 </.header>
-
-<.list>
-  <:item title="Description"><%= @community.description %></:item>
-</.list>
 
 <.modal
   :if={@live_action in [:new, :edit]}
