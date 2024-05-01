@@ -4,7 +4,7 @@ defmodule Ash.Discussions.Comment do
 
   schema "comments" do
     field :body, :string
-    field :karma, :integer
+    field :karma, :integer, default: 0
     field :user_vote, :integer, virtual: true
     field :reply_count, :integer, virtual: true
 

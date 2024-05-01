@@ -6,7 +6,7 @@ defmodule Ash.Discussions.Post do
     field :link, :string
     field :title, :string
     field :body, :string
-    field :karma, :integer
+    field :karma, :integer, default: 0
     field :user_vote, :integer, virtual: true
 
     belongs_to :community, Ash.Communities.Community
