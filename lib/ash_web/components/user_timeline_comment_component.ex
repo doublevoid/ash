@@ -1,4 +1,5 @@
 defmodule AshWeb.Components.UserTimelineCommentComponent do
+  # This component name is a bit long, need to find a better one.
   use AshWeb, :html
 
   def comment(assigns) do

@@ -14,7 +14,7 @@ defmodule AshWeb.UserPageLive.UserTimelineComponent do
       class="flex flex-col"
       phx-viewport-bottom="load-more"
     >
-      <%= for {_key, discussion} <- @discussions do %>
+      <div :for={{_key, discussion} <- @discussions}>
         <%= if discussion.type == "post" do %>
           <div class="flex flex-row">
             <.live_component
@@ -37,7 +37,7 @@ defmodule AshWeb.UserPageLive.UserTimelineComponent do
           </div>
         <% end %>
         <hr />
-      <% end %>
+      </div>
     </div>
     """
   end

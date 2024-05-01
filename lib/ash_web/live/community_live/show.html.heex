@@ -28,13 +28,11 @@
   />
 </.modal>
 
-<%= if @live_action == :show do %>
-  <section class="my-4" phx-update="stream" id="timeline">
-    <.live_component
-      module={AshWeb.Components.TimelineComponent}
-      id="main-component"
-      posts={@streams.posts}
-      current_user={@current_user}
-    />
-  </section>
-<% end %>
+<section :if={@live_action == :show} class="my-4" phx-update="stream" id="timeline">
+  <.live_component
+    module={AshWeb.Components.TimelineComponent}
+    id="main-component"
+    posts={@streams.posts}
+    current_user={@current_user}
+  />
+</section>
