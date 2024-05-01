@@ -21,7 +21,7 @@ defmodule Ash.Discussions.Comment do
   def changeset(comment, attrs) do
     comment
     |> cast(attrs, [:body, :post_id, :user_id, :parent_comment_id, :karma])
-    |> validate_required([:body, :post_id, :user_id])
+    |> validate_required([:body, :post_id, :user_id, :karma])
     |> assoc_constraint(:post)
     |> assoc_constraint(:user)
     |> assoc_constraint(:parent_comment)

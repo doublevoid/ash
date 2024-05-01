@@ -22,7 +22,7 @@ defmodule Ash.Discussions.Post do
   def changeset(post, attrs) do
     post
     |> cast(attrs, [:title, :body, :link, :community_id, :user_id, :karma])
-    |> validate_required([:title, :body, :community_id, :user_id])
+    |> validate_required([:title, :body, :community_id, :user_id, :karma])
     |> assoc_constraint(:community)
     |> assoc_constraint(:user)
   end
