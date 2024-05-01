@@ -13,13 +13,17 @@ defmodule AshWeb.Components.TimelineComponent do
         phx-viewport-bottom="load-more"
       >
         <div :for={{_key, post} <- @posts} class="flex flex-row">
-          <.live_component
-            module={VoteComponent}
-            id={"vote-post-#{post.id}"}
-            current_user={@current_user}
-            voteable={post}
-          />
-          <PostComponent.post post={post} />
+          <div class="basis-12">
+            <.live_component
+              module={VoteComponent}
+              id={"vote-post-#{post.id}"}
+              current_user={@current_user}
+              voteable={post}
+            />
+          </div>
+          <div>
+            <PostComponent.post post={post} />
+         </div>
         </div>
       </div>
     </div>

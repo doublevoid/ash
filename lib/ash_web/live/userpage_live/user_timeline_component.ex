@@ -17,22 +17,26 @@ defmodule AshWeb.UserPageLive.UserTimelineComponent do
       <div :for={{_key, discussion} <- @discussions}>
         <%= if discussion.type == "post" do %>
           <div class="flex flex-row">
-            <.live_component
-              module={VoteComponent}
-              id={"vote-post-" <> Integer.to_string(discussion.id)}
-              current_user={@current_user}
-              voteable={struct(Post, discussion)}
-            />
+            <div class="mr-1">
+              <.live_component
+                module={VoteComponent}
+                id={"vote-post-" <> Integer.to_string(discussion.id)}
+                current_user={@current_user}
+                voteable={struct(Post, discussion)}
+              />
+            </div>
             <PostComponent.post post={discussion} />
           </div>
         <% else %>
           <div class="flex flex-row">
-            <.live_component
-              module={VoteComponent}
-              id={"vote-comment" <> Integer.to_string(discussion.id)}
-              current_user={@current_user}
-              voteable={struct(Comment, discussion)}
-            />
+            <div class="mr-1">
+              <.live_component
+                module={VoteComponent}
+                id={"vote-comment" <> Integer.to_string(discussion.id)}
+                current_user={@current_user}
+                voteable={struct(Comment, discussion)}
+              />
+            </div>
             <AshWeb.Components.UserTimelineCommentComponent.comment comment={discussion} />
           </div>
         <% end %>

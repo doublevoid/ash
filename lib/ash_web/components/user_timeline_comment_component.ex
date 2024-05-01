@@ -4,12 +4,12 @@ defmodule AshWeb.Components.UserTimelineCommentComponent do
 
   def comment(assigns) do
     ~H"""
-    <div class="flex flex-col grow">
+    <div class="flex flex-col">
       <div class="flex flex-row">
         <.link patch={~p"/c/#{@comment.community.name}/comments/#{@comment.post_id}"}>
           <%= @comment.title %>
         </.link>
-        <p class="text-sm">
+        <p class="ml-1 text-sm mt-0.5">
           in
           <.link patch={~p"/c/#{@comment.community.name}"}>
             <%= @comment.community.name %>
