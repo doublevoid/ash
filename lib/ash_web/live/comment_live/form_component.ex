@@ -72,7 +72,7 @@ defmodule AshWeb.CommentLive.FormComponent do
   end
 
   defp save_comment(socket, :new, comment_params) do
-    case Discussions.create_comment(comment_params) do
+    case Discussions.create_comment_and_preload(comment_params) do
       {:ok, comment} ->
         notify_parent({:saved, comment, socket.assigns[:root_comment]})
         broadcast_comment(comment, socket.assigns[:root_comment])
