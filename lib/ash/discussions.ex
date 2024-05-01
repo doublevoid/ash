@@ -127,7 +127,7 @@ defmodule Ash.Discussions do
       ** (Ecto.NoResultsError)
 
   """
-  def get_post!(id, preloads \\ []), do: Repo.get!(Post, id) |> Repo.preload(preloads)
+  def get_post!(id), do: Repo.get!(Post, id)
 
   def get_post_with_extra_data!(id, user \\ nil) do
     query =
@@ -326,14 +326,15 @@ defmodule Ash.Discussions do
 
   """
   def create_comment(attrs \\ %{}) do
-    comment_changeset =
-      %Comment{}
-      |> Comment.changeset(attrs)
+    %Comment{}
+    |> Comment.changeset(attrs)
+    |> Repo.insert()
+  end
 
-    case Repo.insert(comment_changeset) do
+  def create_comment_and_preload(attrs \\ %{}) do
+    case create_comment(attrs) do
       {:ok, comment} ->
-        comment = Repo.preload(comment, [:user, :child_comments])
-        {:ok, comment}
+        {:ok, Repo.preload(comment, [:user, :child_comments])}
 
       {:error, changeset} ->
         {:error, changeset}
