@@ -16,6 +16,7 @@ defmodule Ash.DiscussionsFixtures do
         body: "some body",
         link: "some link",
         title: "some title",
+        karma: 0,
         community_id: CommunitiesFixtures.community_fixture().id,
         user_id: AccountsFixtures.user_fixture().id
       })
@@ -32,6 +33,7 @@ defmodule Ash.DiscussionsFixtures do
       attrs
       |> Enum.into(%{
         body: "some body",
+        karma: 0,
         post_id: post_fixture().id,
         user_id: AccountsFixtures.user_fixture().id
       })

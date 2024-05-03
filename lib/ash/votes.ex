@@ -4,12 +4,12 @@ defmodule Ash.Votes do
   """
 
   import Ecto.Query, warn: false
+  alias Ash.Votes.CommentVote
   alias Ash.Discussions
   alias Ash.Discussions.Comment
   alias Ash.Discussions.Post
   alias Ash.Accounts.User
   alias Ash.Repo
-
   alias Ash.Votes.PostVote
 
   @doc """
@@ -41,35 +41,7 @@ defmodule Ash.Votes do
   """
   def get_post_vote!(id), do: Repo.get!(PostVote, id)
 
-  def upsert_post_vote(attrs \\ %{}) do
-    existing_post_vote =
-      Repo.get_by(PostVote, user_id: attrs[:user_id], post_id: attrs[:post_id])
-
-    post_vote =
-      %PostVote{}
-      |> PostVote.changeset(attrs)
-      |> Repo.insert(
-        on_conflict: [set: [value: attrs[:value]]],
-        conflict_target: [:post_id, :user_id]
-      )
-
-    karma_change =
-      if existing_post_vote do
-        calculate_karma_change(existing_post_vote.value, attrs[:value])
-      else
-        calculate_karma_change(nil, attrs[:value])
-      end
-
-    Discussions.update_post_karma(attrs[:post_id], karma_change)
-
-    post_vote
-  end
-
-  defp calculate_karma_change(1, -1), do: -2
-
-  defp calculate_karma_change(-1, 1), do: 2
-
-  defp calculate_karma_change(nil, new_value), do: new_value
+  def upsert_post_vote(attrs \\ %{}), do: upsert_vote(PostVote, attrs)
 
   @doc """
   Updates a post_vote.
@@ -101,13 +73,7 @@ defmodule Ash.Votes do
       {:error, %Ecto.Changeset{}}
 
   """
-  def delete_post_vote(%Post{} = post, %User{} = user) do
-    vote = Repo.get_by(PostVote, post_id: post.id, user_id: user.id)
-
-    Repo.delete(vote)
-
-    Discussions.update_post_karma(post.id, -vote.value)
-  end
+  def delete_post_vote(%Post{} = post, %User{} = user), do: delete_vote(PostVote, post, user)
 
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking post_vote changes.
@@ -121,8 +87,6 @@ defmodule Ash.Votes do
   def change_post_vote(%PostVote{} = post_vote, attrs \\ %{}) do
     PostVote.changeset(post_vote, attrs)
   end
-
-  alias Ash.Votes.CommentVote
 
   @doc """
   Returns the list of comment_votes.
@@ -165,29 +129,7 @@ defmodule Ash.Votes do
       {:error, %Ecto.Changeset{}}
 
   """
-  def upsert_comment_vote(attrs \\ %{}) do
-    existing_comment_vote =
-      Repo.get_by(CommentVote, user_id: attrs[:user_id], comment_id: attrs[:comment_id])
-
-    post_vote =
-      %CommentVote{}
-      |> CommentVote.changeset(attrs)
-      |> Repo.insert(
-        on_conflict: [set: [value: attrs[:value]]],
-        conflict_target: [:comment_id, :user_id]
-      )
-
-    karma_change =
-      if existing_comment_vote do
-        calculate_karma_change(existing_comment_vote.value, attrs[:value])
-      else
-        calculate_karma_change(nil, attrs[:value])
-      end
-
-    Discussions.update_comment_karma(attrs[:comment_id], karma_change)
-
-    post_vote
-  end
+  def upsert_comment_vote(attrs \\ %{}), do: upsert_vote(CommentVote, attrs)
 
   @doc """
   Updates a comment_vote.
@@ -219,13 +161,8 @@ defmodule Ash.Votes do
       {:error, %Ecto.Changeset{}}
 
   """
-  def delete_comment_vote(%Comment{} = comment, %User{} = user) do
-    vote = Repo.get_by(CommentVote, comment_id: comment.id, user_id: user.id)
-
-    Repo.delete(vote)
-
-    Discussions.update_comment_karma(comment.id, -vote.value)
-  end
+  def delete_comment_vote(%Comment{} = comment, %User{} = user),
+    do: delete_vote(CommentVote, comment, user)
 
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking comment_vote changes.
@@ -239,4 +176,51 @@ defmodule Ash.Votes do
   def change_comment_vote(%CommentVote{} = comment_vote, attrs \\ %{}) do
     CommentVote.changeset(comment_vote, attrs)
   end
+
+  defp vote_foreign(PostVote), do: {:post_id, Post}
+
+  defp vote_foreign(CommentVote), do: {:comment_id, Comment}
+
+  defp upsert_vote(module, attrs) do
+    {foreign_column, parent_module} = vote_foreign(module)
+
+    existing_vote =
+      Repo.get_by(module, user_id: attrs[:user_id], "#{foreign_column}": attrs[foreign_column])
+
+    karma_change = calculate_karma_change(existing_vote, attrs[:value])
+
+    {:ok, vote} =
+      Repo.transaction(fn ->
+        Discussions.update_discussion_karma(parent_module, attrs[foreign_column], karma_change)
+
+        struct(module)
+        |> module.changeset(attrs)
+        |> Repo.insert(
+          on_conflict: [set: [value: attrs[:value]]],
+          conflict_target: [foreign_column, :user_id]
+        )
+      end)
+
+    vote
+  end
+
+  defp delete_vote(module, discussion, user) do
+    {foreign_column, parent_module} = vote_foreign(module)
+
+    {:ok, deleted_vote} =
+      Repo.transaction(fn ->
+        vote = Repo.get_by(module, "#{foreign_column}": discussion.id, user_id: user.id)
+        Discussions.update_discussion_karma(parent_module, discussion.id, -vote.value)
+
+        Repo.delete(vote)
+      end)
+
+    deleted_vote
+  end
+
+  defp calculate_karma_change(%{value: 1}, -1), do: -2
+
+  defp calculate_karma_change(%{value: -1}, 1), do: 2
+
+  defp calculate_karma_change(nil, new_value), do: new_value
 end

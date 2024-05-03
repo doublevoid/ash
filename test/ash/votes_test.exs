@@ -85,7 +85,11 @@ defmodule Ash.VotesTest do
 
     import Ash.VotesFixtures
 
-    @invalid_attrs %{value: nil}
+    @invalid_attrs %{
+      value: 2,
+      user_id: -1,
+      comment_id: -1
+    }
 
     test "list_comment_votes/0 returns all comment_votes" do
       comment_vote = comment_vote_fixture()
@@ -97,19 +101,19 @@ defmodule Ash.VotesTest do
       assert Votes.get_comment_vote!(comment_vote.id) == comment_vote
     end
 
-    test "create_comment_vote/1 with valid data creates a comment_vote" do
+    test "create_comment_vote/1 with valid data upserts a comment_vote" do
       valid_attrs = %{
         value: 1,
         comment_id: DiscussionsFixtures.comment_fixture().id,
         user_id: AccountsFixtures.user_fixture().id
       }
 
-      assert {:ok, %CommentVote{} = comment_vote} = Votes.create_comment_vote(valid_attrs)
+      assert {:ok, %CommentVote{} = comment_vote} = Votes.upsert_comment_vote(valid_attrs)
       assert comment_vote.value == 1
     end
 
-    test "create_comment_vote/1 with invalid data returns error changeset" do
-      assert {:error, %Ecto.Changeset{}} = Votes.create_comment_vote(@invalid_attrs)
+    test "upsert_comment_vote/1 with invalid data returns error changeset" do
+      assert {:error, %Ecto.Changeset{}} = Votes.upsert_comment_vote(@invalid_attrs)
     end
 
     test "update_comment_vote/2 with valid data updates the comment_vote" do
@@ -130,7 +134,12 @@ defmodule Ash.VotesTest do
 
     test "delete_comment_vote/1 deletes the comment_vote" do
       comment_vote = comment_vote_fixture()
-      assert {:ok, %CommentVote{}} = Votes.delete_comment_vote(comment_vote)
+      comment = Discussions.get_comment!(comment_vote.comment_id)
+      user = Accounts.get_user!(comment_vote.user_id)
+
+      assert {:ok, %CommentVote{}} =
+               Votes.delete_comment_vote(comment, user)
+
       assert_raise Ecto.NoResultsError, fn -> Votes.get_comment_vote!(comment_vote.id) end
     end
 

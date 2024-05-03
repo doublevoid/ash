@@ -12,7 +12,7 @@
       <div class="flex flex-row">
         <%= AshWeb.Components.CommunityHeaderComponent.header(%{community: @post.community}) %> • Posted by
         <div></div>
-        <.link class="ml-1 mr-1" href={~p"/u/#{@post.user.username}"}>
+        <.link class="ml-1 mr-1" patch={~p"/u/#{@post.user.username}"}>
           <%= "/u/#{@post.user.username}" %>
         </.link>
         at:
@@ -35,7 +35,6 @@
         <.live_component
           module={AshWeb.CommentLive.FormComponent}
           id={:new}
-          title="yep cock"
           action={:new}
           comment={%Discussions.Comment{}}
           post_id={@post.id}
@@ -46,7 +45,7 @@
       <% end %>
     </div>
     <div id="post-main" phx-viewport-bottom="load-more" phx-update="stream">
-      <%= for {_, comment} <- @streams.comments do %>
+      <div :for={{_, comment} <- @streams.comments}>
         <div class="flex flex-row" id={"stream-comments-#{comment.id}"} phx-update="stream">
           <.live_component
             module={AshWeb.Components.VoteComponent}
@@ -63,7 +62,7 @@
           />
         </div>
         <hr />
-      <% end %>
+      </div>
     </div>
   </div>
 </div>

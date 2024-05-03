@@ -18,35 +18,35 @@ defmodule AshWeb.Components.VoteComponent do
 
     ~H"""
     <div>
-      <div id={@id} phx-update="replace" class="flex flex-col text-center">
-        <div
-          phx-click="vote"
-          phx-value-id={@voteable.id}
-          phx-value-type={@voteable_type}
-          phx-value-value={1}
-          phx-target={@myself}
-        >
-          <.icon
-            name="hero-arrow-up-circle"
-            class={"w-3 h-3 #{if @current_user && @voteable.user_vote == 1, do: "bg-blue-600"}"}
-          />
-        </div>
-
-        <div class="">
-          <%= @voteable.karma || 0 %>
-        </div>
-
-        <div
-          phx-click="vote"
-          phx-value-id={@voteable.id}
-          phx-value-type={@voteable_type}
-          phx-value-value={-1}
-          phx-target={@myself}
-        >
-          <.icon
-            name="hero-arrow-down-circle"
-            class={"w-3 h-3 #{if @current_user && @voteable.user_vote == -1, do: "bg-red-600"}"}
-          />
+      <div id={@id} phx-update="replace" class="flex flex-row">
+        <div class="flex-grow flex-col text-center">
+          <div
+            phx-click="vote"
+            phx-value-id={@voteable.id}
+            phx-value-type={@voteable_type}
+            phx-value-value={1}
+            phx-target={@myself}
+          >
+            <.icon
+              name="hero-arrow-up-circle"
+              class={"w-3 h-3 #{if @current_user && @voteable.user_vote == 1, do: "bg-blue-600"}"}
+            />
+          </div>
+          <p>
+            <%= @voteable.karma || 0 %>
+          </p>
+          <div
+            phx-click="vote"
+            phx-value-id={@voteable.id}
+            phx-value-type={@voteable_type}
+            phx-value-value={-1}
+            phx-target={@myself}
+          >
+            <.icon
+              name="hero-arrow-down-circle"
+              class={"w-3 h-3 #{if @current_user && @voteable.user_vote == -1, do: "bg-red-600"}"}
+            />
+          </div>
         </div>
       </div>
     </div>

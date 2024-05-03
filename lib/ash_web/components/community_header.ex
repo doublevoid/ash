@@ -7,7 +7,7 @@ defmodule AshWeb.Components.CommunityHeaderComponent do
     ~H"""
     <div class="flex">
       <p>
-        <.link href={~p"/c/#{@community.name}"}>
+        <.link patch={~p"/c/#{@community.name}"}>
           <%= "/c/#{@community.name}" %>
         </.link>
       </p>
