@@ -47,6 +47,11 @@ defmodule AshWeb.UserpageLive.Show do
      end}
   end
 
+  @impl true
+  def handle_params(_params, _, socket) do
+    {:noreply, socket |> assign(:page_title, "/u/#{socket.assigns.user.username}")}
+  end
+
   defp stream_new_discussions(socket) do
     offset = socket.assigns.offset
     limit = socket.assigns.limit

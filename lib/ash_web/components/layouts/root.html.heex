@@ -4,8 +4,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content={get_csrf_token()} />
-    <.live_title suffix=" · Phoenix Framework">
-      <%= assigns[:page_title] || "Ash" %>
+    <.live_title suffix=" · Ash">
+      {assigns[:page_title] || "Ash"}
     </.live_title>
     <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />
     <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}>
@@ -16,7 +16,7 @@
       <%= if @current_user do %>
         <li class="text-[0.8125rem] leading-6 text-zinc-900">
           <.link patch={~p"/u/#{@current_user.username}"}>
-            <%= "/u/#{@current_user.username}" %>
+            {"/u/#{@current_user.username}"}
           </.link>
         </li>
         <li>
@@ -55,6 +55,6 @@
         </li>
       <% end %>
     </ul>
-    <%= @inner_content %>
+    {@inner_content}
   </body>
 </html>

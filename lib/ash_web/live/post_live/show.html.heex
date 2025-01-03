@@ -11,7 +11,6 @@
     <div class="flex flex-row">
       <div class="flex flex-row">
         {AshWeb.Components.CommunityHeaderComponent.header(%{community: @post.community})} • Posted by
-        <div></div>
         <.link class="ml-1 mr-1" patch={~p"/u/#{@post.user.username}"}>
           {"/u/#{@post.user.username}"}
         </.link>

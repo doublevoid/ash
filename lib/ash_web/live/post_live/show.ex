@@ -35,7 +35,7 @@ defmodule AshWeb.PostLive.Show do
   def handle_params(%{"id" => _id}, _, socket) do
     {:noreply,
      socket
-     |> assign(:page_title, page_title(socket.assigns.live_action))}
+     |> assign(:page_title, "#{socket.assigns.post.title}")}
   end
 
   @impl true
