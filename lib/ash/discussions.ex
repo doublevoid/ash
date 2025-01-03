@@ -12,6 +12,10 @@ defmodule Ash.Discussions do
   alias Ash.Repo
   alias Ash.Discussions.Post
 
+  @discussion_load_size 100
+
+  def discussion_load_size, do: @discussion_load_size
+
   @doc """
   Returns the list of posts.
 
@@ -75,7 +79,7 @@ defmodule Ash.Discussions do
   end
 
   defp load_post_comments(offset, limit, id, current_user) do
-    all_comments =
+    all_comments_query =
       from(c in Comment,
         left_join: v in assoc(c, :votes),
         left_join: r in Comment,
@@ -91,7 +95,9 @@ defmodule Ash.Discussions do
       )
       |> maybe_join_user_votes(current_user, :comment, true)
 
-    map_child_into_parents(Repo.all(all_comments))
+    all_comments = Repo.all(all_comments_query)
+
+    {map_child_into_parents(all_comments), length(all_comments)}
   end
 
   defp map_child_into_parents(comments) do
@@ -438,6 +444,8 @@ defmodule Ash.Discussions do
       |> limit(^limit)
       |> order_by(fragment("inserted_at DESC"))
 
-    Repo.all(union_query)
+    all_discussions = Repo.all(union_query)
+
+    {all_discussions, length(all_discussions)}
   end
 end

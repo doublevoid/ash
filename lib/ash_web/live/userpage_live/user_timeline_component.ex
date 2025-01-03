@@ -3,6 +3,7 @@ defmodule AshWeb.UserPageLive.UserTimelineComponent do
   alias Ash.Discussions.Comment
   alias AshWeb.Components.PostComponent
   alias AshWeb.Components.VoteComponent
+  alias AshWeb.Components.EndOfTime
 
   use AshWeb, :live_component
 
@@ -12,7 +13,7 @@ defmodule AshWeb.UserPageLive.UserTimelineComponent do
       id="main-component-body"
       phx-update="stream"
       class="flex flex-col"
-      phx-viewport-bottom="load-more"
+      phx-viewport-bottom={!@end_of_timeline && "load-more"}
     >
       <div :for={{_key, discussion} <- @discussions}>
         <%= if discussion.type == "post" do %>
@@ -42,6 +43,7 @@ defmodule AshWeb.UserPageLive.UserTimelineComponent do
         <% end %>
         <hr />
       </div>
+      <EndOfTime.render end_of_timeline={@end_of_timeline} />
     </div>
     """
   end

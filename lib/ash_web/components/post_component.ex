@@ -5,17 +5,18 @@ defmodule AshWeb.Components.PostComponent do
     ~H"""
     <div class="flex flex-col">
       <.link patch={~p"/c/#{@post.community.name}/comments/#{@post.id}"}>
-        <%= @post.title %>
+        {@post.title}
       </.link>
-      <div class="flex flex-row text-sm">
+      <div class="flex flex-row text-sm gap-1">
         <.link patch={~p"/c/#{@post.community.name}"}>
-          /c/<%= @post.community.name %>
+          /c/{@post.community.name}
         </.link>
-        <.link patch={~p"/u/#{@post.user.username}"} class="ml-1 mr-1">
-          • Posted by /u/<%= @post.user.username %>
+        <span>• Posted by</span>
+        <.link patch={~p"/u/#{@post.user.username}"}>
+          /u/{@post.user.username}
         </.link>
         <p>
-          at: <%= @post.inserted_at %>
+          at: {Calendar.strftime(@post.inserted_at, "%Y-%m-%d")}
         </p>
       </div>
     </div>
