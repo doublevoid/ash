@@ -51,7 +51,8 @@ defmodule Ash.MixProject do
       {:gettext, "~> 0.26.2"},
       {:jason, "~> 1.4.4"},
       {:dns_cluster, "~> 0.1.3"},
-      {:bandit, "~> 1.6.1"}
+      {:bandit, "~> 1.6.1"},
+      {:rustler, "~> 0.35.1"}
     ]
   end
 
