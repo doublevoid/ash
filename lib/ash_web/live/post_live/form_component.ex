@@ -2,6 +2,7 @@ defmodule AshWeb.PostLive.FormComponent do
   use AshWeb, :live_component
 
   alias Ash.Discussions
+  alias ExAws.S3
 
   #   <div>
   #   <%= for {_ref, msg} <- @uploads.image.errors do %>
@@ -75,7 +76,7 @@ defmodule AshWeb.PostLive.FormComponent do
   end
 
   defp save_post(socket, :edit, post_params, saved_images) do
-    case Discussions.update_post(socket.assigns.post, post_params) do
+    case Discussions.update_post(socket.assigns.post, post_params, saved_images) do
       {:ok, post} ->
         notify_parent({:saved, post})
 
@@ -90,7 +91,7 @@ defmodule AshWeb.PostLive.FormComponent do
   end
 
   defp save_post(socket, :new, post_params, saved_images) do
-    case Discussions.create_post(post_params) do
+    case Discussions.create_post(post_params, saved_images) do
       {:ok, post} ->
         notify_parent({:saved, post})
 
@@ -108,15 +109,17 @@ defmodule AshWeb.PostLive.FormComponent do
     consume_uploaded_entries(socket, :image, fn %{path: path}, _entry ->
       binary = File.read!(path)
       grayscale_image = Ash.ImageProcessing.convert_to_grayscale(binary)
+      path = "user-images/#{Path.basename(path)}.png"
 
-      dest =
-        Path.join(
-          Application.app_dir(:ash, "priv/static/uploads"),
-          Path.basename(path)
-        )
-
-      File.write!(dest, grayscale_image)
-      {:ok, ~p"/uploads/#{Path.basename(dest)}"}
+      case S3.put_object(
+             Application.fetch_env!(:ash, :aws_s3_bucket_name),
+             path,
+             grayscale_image
+           )
+           |> ExAws.request() do
+        {:ok, _} -> {:ok, path}
+        {:error, term} -> {:postpone, term}
+      end
     end)
   end
 

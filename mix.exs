@@ -52,7 +52,9 @@ defmodule Ash.MixProject do
       {:jason, "~> 1.4.4"},
       {:dns_cluster, "~> 0.1.3"},
       {:bandit, "~> 1.6.1"},
-      {:rustler, "~> 0.35.1"}
+      {:rustler, "~> 0.35.1"},
+      {:ex_aws, "~> 2.5.8"},
+      {:ex_aws_s3, "~> 2.5.6"}
     ]
   end
 

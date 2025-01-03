@@ -68,6 +68,13 @@ config :ash,
   aws_s3_bucket_name: System.get_env("S3_BUCKET_NAME"),
   aws_region: System.get_env("AWS_REGION")
 
+config :ash,
+  # we can probably get rid of this and manually build the URL
+  aws_bucket_url: System.get_env("AWS_BUCKET_URL")
+
+config :ex_aws,
+  http_client: Ash.ExAwsHttpClient
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

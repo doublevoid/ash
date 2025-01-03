@@ -4,9 +4,9 @@ defmodule Ash.Repo.Migrations.AddPostImagesTable do
   def change do
     create table(:post_images) do
       add :post_id, references(:posts, on_delete: :delete_all)
-      add :image_url, :string
+      add :path, :text
 
-      timestamps()
+      timestamps(type: :utc_datetime_usec)
     end
   end
 end

@@ -14,6 +14,7 @@ defmodule Ash.Discussions.Post do
 
     has_many :comments, Ash.Discussions.Comment
     has_many :votes, Ash.Votes.PostVote
+    has_many :images, Ash.Discussions.PostImage
 
     timestamps(type: :utc_datetime_usec)
   end

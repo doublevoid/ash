@@ -41,4 +41,19 @@ defmodule Ash.DiscussionsFixtures do
 
     comment
   end
+
+  @doc """
+  Generate a post_images.
+  """
+  def post_images_fixture(attrs \\ %{}) do
+    {:ok, post_images} =
+      attrs
+      |> Enum.into(%{
+        path: "some path",
+        post_id: 42
+      })
+      |> Ash.Discussions.create_post_images()
+
+    post_images
+  end
 end
