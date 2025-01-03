@@ -25,7 +25,10 @@ defmodule AshWeb.Components.CommentComponent do
             reply
           </button>
           <button
-            :if={@comment.reply_count > 0 && @child_comments_count != @comment.reply_count}
+            :if={
+              @comment.reply_count && @comment.reply_count > 0 &&
+                @child_comments_count != @comment.reply_count
+            }
             class="text-xs"
             phx-click="load-replies"
             value={@local_root_comment.id}

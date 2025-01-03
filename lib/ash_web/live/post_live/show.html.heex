@@ -10,24 +10,24 @@
   <div class="flex flex-col">
     <div class="flex flex-row">
       <div class="flex flex-row">
-        <%= AshWeb.Components.CommunityHeaderComponent.header(%{community: @post.community}) %> • Posted by
+        {AshWeb.Components.CommunityHeaderComponent.header(%{community: @post.community})} • Posted by
         <div></div>
         <.link class="ml-1 mr-1" patch={~p"/u/#{@post.user.username}"}>
-          <%= "/u/#{@post.user.username}" %>
+          {"/u/#{@post.user.username}"}
         </.link>
         at:
         <p class="ml-1">
-          <%= @post.inserted_at %>
+          {@post.inserted_at}
         </p>
       </div>
     </div>
     <div class="mt-1 flex flex-row">
       <span class="text-lg font-bold">
-        <%= @post.title %>
+        {@post.title}
       </span>
     </div>
     <div class="flex flex-row">
-      <%= @post.body %>
+      {@post.body}
     </div>
     <hr />
     <div>
@@ -44,9 +44,13 @@
         />
       <% end %>
     </div>
-    <div id="post-main" phx-viewport-bottom={!@end_of_timeline? && "load-more"} phx-update="stream">
-      <div :for={{_, comment} <- @streams.comments}>
-        <div class="flex flex-row" id={"stream-comments-#{comment.id}"} phx-update="stream">
+    <div
+      id="post-main"
+      phx-viewport-bottom={!@end_of_timeline? && "load-more"}
+      phx-update="stream"
+    >
+      <div :for={{dom_id, comment} <- @streams.comments} id={dom_id} phx-update="stream">
+        <div class="flex flex-row">
           <.live_component
             module={AshWeb.Components.VoteComponent}
             id={"vote-comment-#{comment.id}"}
