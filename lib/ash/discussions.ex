@@ -11,6 +11,11 @@ defmodule Ash.Discussions do
   alias Ash.Accounts.User
   alias Ash.Repo
   alias Ash.Discussions.Post
+  alias Ash.Discussions.PostImage
+
+  @discussion_load_size 100
+
+  def discussion_load_size, do: @discussion_load_size
 
   @doc """
   Returns the list of posts.
@@ -75,7 +80,7 @@ defmodule Ash.Discussions do
   end
 
   defp load_post_comments(offset, limit, id, current_user) do
-    all_comments =
+    all_comments_query =
       from(c in Comment,
         left_join: v in assoc(c, :votes),
         left_join: r in Comment,
@@ -91,7 +96,9 @@ defmodule Ash.Discussions do
       )
       |> maybe_join_user_votes(current_user, :comment, true)
 
-    map_child_into_parents(Repo.all(all_comments))
+    all_comments = Repo.all(all_comments_query)
+
+    {map_child_into_parents(all_comments), length(all_comments)}
   end
 
   defp map_child_into_parents(comments) do
@@ -146,28 +153,48 @@ defmodule Ash.Discussions do
     from(p in Post,
       join: c in assoc(p, :community),
       join: u in assoc(p, :user),
+      join: i in assoc(p, :images),
       left_join: v in assoc(p, :votes),
-      preload: [community: c, user: u],
+      preload: [community: c, user: u, images: i],
       order_by: :id
     )
   end
+
+  def create_post(attrs \\ %{}, images)
 
   @doc """
   Creates a post.
 
   ## Examples
 
-      iex> create_post(%{field: value})
+      iex> create_post(%{field: value}, images)
       {:ok, %Post{}}
 
-      iex> create_post(%{field: bad_value})
+      iex> create_post(%{field: bad_value}, images)
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_post(attrs \\ %{}) do
+  def create_post(attrs, []) do
     %Post{}
     |> Post.changeset(attrs)
     |> Repo.insert()
+  end
+
+  def create_post(attrs, images) do
+    Repo.transaction(fn ->
+      post =
+        %Post{}
+        |> Post.changeset(attrs)
+        |> Repo.insert!()
+
+      post_images =
+        Enum.map(images, fn path ->
+          PostImage.changeset(%PostImage{post_id: post.id}, %{path: path})
+          |> Repo.insert!()
+        end)
+
+      %{post | images: post_images}
+    end)
   end
 
   @doc """
@@ -175,17 +202,36 @@ defmodule Ash.Discussions do
 
   ## Examples
 
-      iex> update_post(post, %{field: new_value})
+      iex> update_post(post, %{field: new_value}, images)
       {:ok, %Post{}}
 
-      iex> update_post(post, %{field: bad_value})
+      iex> update_post(post, %{field: bad_value}, images)
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_post(%Post{} = post, attrs) do
+  def update_post(%Post{} = post, attrs, []) do
     post
     |> Post.changeset(attrs)
     |> Repo.update()
+  end
+
+  def update_post(%Post{} = post, attrs, images) do
+    Repo.transaction(fn ->
+      post
+      |> Post.changeset(attrs)
+      |> Repo.update()
+
+      post_images =
+        Enum.map(images, fn path ->
+          PostImage.changeset(%PostImage{post_id: post.id}, %{path: path})
+          |> Repo.insert()
+        end)
+
+      require IEx
+      IEx.pry()
+
+      post
+    end)
   end
 
   @spec update_discussion_karma(Post | Comment, integer(), integer()) :: any()
@@ -438,6 +484,8 @@ defmodule Ash.Discussions do
       |> limit(^limit)
       |> order_by(fragment("inserted_at DESC"))
 
-    Repo.all(union_query)
+    all_discussions = Repo.all(union_query)
+
+    {all_discussions, length(all_discussions)}
   end
 end

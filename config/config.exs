@@ -15,7 +15,7 @@ config :ash,
 # Configures the endpoint
 config :ash, AshWeb.Endpoint,
   url: [host: "localhost"],
-  adapter: Phoenix.Endpoint.Cowboy2Adapter,
+  adapter: Bandit.PhoenixAdapter,
   render_errors: [
     formats: [html: AshWeb.ErrorHTML, json: AshWeb.ErrorJSON],
     layout: false
@@ -44,7 +44,7 @@ config :esbuild,
 
 # Configure tailwind (the version is required)
 config :tailwind,
-  version: "3.3.2",
+  version: "3.4.17",
   default: [
     args: ~w(
       --config=tailwind.config.js
@@ -61,6 +61,19 @@ config :logger, :console,
 
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
+
+config :ash,
+  aws_access_key_id: System.get_env("AWS_ACCESS_KEY_ID"),
+  aws_secret_access_key: System.get_env("AWS_SECRET_ACCESS_KEY"),
+  aws_s3_bucket_name: System.get_env("S3_BUCKET_NAME"),
+  aws_region: System.get_env("AWS_REGION")
+
+config :ash,
+  # we can probably get rid of this and manually build the URL
+  aws_bucket_url: System.get_env("AWS_BUCKET_URL")
+
+config :ex_aws,
+  http_client: Ash.ExAwsHttpClient
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

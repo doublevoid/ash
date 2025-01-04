@@ -6,6 +6,15 @@ defmodule AshWeb.PostLive.Show do
   @impl true
   def mount(params, _session, socket) do
     AshWeb.Endpoint.subscribe("post_#{params["id"]}")
+    discussion_load_size = Discussions.discussion_load_size()
+
+    {comments, comment_count} =
+      Discussions.get_post_comments!(
+        0,
+        discussion_load_size,
+        params["id"],
+        socket.assigns.current_user
+      )
 
     {:ok,
      socket
@@ -15,27 +24,36 @@ defmodule AshWeb.PostLive.Show do
      )
      |> stream(
        :comments,
-       Discussions.get_post_comments!(0, 100, params["id"], socket.assigns.current_user)
+       comments
      )
-     |> assign(:offset, 0)
-     |> assign(:limit, 100)}
+     |> assign(:end_of_timeline?, comment_count < discussion_load_size)
+     |> assign(:offset, discussion_load_size)
+     |> assign(:limit, discussion_load_size)}
   end
 
   @impl true
   def handle_params(%{"id" => _id}, _, socket) do
     {:noreply,
      socket
-     |> assign(:page_title, page_title(socket.assigns.live_action))}
+     |> assign(:page_title, "#{socket.assigns.post.title}")}
   end
 
   @impl true
   def handle_event("load-more", _, socket) do
-    socket =
-      socket
-      |> update(:offset, fn offset -> offset + socket.assigns.limit end)
-      |> stream(:comments, stream_new_comments(socket))
+    {new_comments, _comment_count} = stream_new_comments(socket)
 
-    {:noreply, socket}
+    {:noreply,
+     case new_comments do
+       [] ->
+         socket
+         |> assign(:end_of_timeline?, true)
+
+       [_ | _] ->
+         socket
+         |> stream(:comments, new_comments)
+         |> update(:offset, fn offset -> offset + Discussions.discussion_load_size() end)
+         |> assign(:end_of_timeline?, false)
+     end}
   end
 
   @impl true
@@ -91,7 +109,7 @@ defmodule AshWeb.PostLive.Show do
   end
 
   defp stream_new_comments(socket) do
-    offset = socket.assigns.offset
+    offset = socket.assigns.offset + Discussions.discussion_load_size()
     limit = socket.assigns.limit
 
     Discussions.get_post_comments!(

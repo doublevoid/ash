@@ -26,7 +26,11 @@ Live comments through PubSub.
 
 An interface for subscribing to communities.
 
-Making posts in a community
+Making posts in a community (with images)!
+
+A Rust NIF through [rustler](https://github.com/rusterlium/rustler), making every uploaded image black and white.
+
+Images stored in S3 buckets (minio used for local dev).
 
 ## What is missing:
 

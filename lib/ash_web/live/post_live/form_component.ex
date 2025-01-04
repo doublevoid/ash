@@ -2,13 +2,25 @@ defmodule AshWeb.PostLive.FormComponent do
   use AshWeb, :live_component
 
   alias Ash.Discussions
+  alias ExAws.S3
+
+  #   <div>
+  #   <%= for {_ref, msg} <- @uploads.image.errors do %>
+  #     <h3>{Phoenix.Naming.humanize(msg)}</h3>
+  #   <% end %>
+
+  #   <%= for entry <- @uploads.image.entries do %>
+  #     <.live_img_preview entry={entry} width="75" />
+  #     <div class="py-5">{entry.progress}%</div>
+  #   <% end %>
+  # </div>
 
   @impl true
   def render(assigns) do
     ~H"""
     <div>
       <.header>
-        <%= @title %>
+        {@title}
         <:subtitle>Use this form to manage post records in your database.</:subtitle>
       </.header>
 
@@ -22,6 +34,7 @@ defmodule AshWeb.PostLive.FormComponent do
         <.input field={@form[:title]} type="text" label="Title" />
         <.input field={@form[:body]} type="textarea" label="Body" />
         <.input field={@form[:link]} type="text" label="Link" />
+        <.live_file_input upload={@uploads.image} />
         <:actions>
           <.button phx-disable-with="Saving...">Save Post</.button>
         </:actions>
@@ -37,6 +50,8 @@ defmodule AshWeb.PostLive.FormComponent do
     {:ok,
      socket
      |> assign(assigns)
+     |> allow_upload(:image, accept: ~w(.jpg .jpeg .png .webp), max_entries: 5)
+     |> assign(:uploaded_images, [])
      |> assign_form(changeset)}
   end
 
@@ -55,11 +70,13 @@ defmodule AshWeb.PostLive.FormComponent do
   def handle_event("save", %{"post" => post_params}, socket) do
     params = merge_params(post_params, socket)
 
-    save_post(socket, socket.assigns.action, params)
+    saved_images = save_images(socket)
+
+    save_post(socket, socket.assigns.action, params, saved_images)
   end
 
-  defp save_post(socket, :edit, post_params) do
-    case Discussions.update_post(socket.assigns.post, post_params) do
+  defp save_post(socket, :edit, post_params, saved_images) do
+    case Discussions.update_post(socket.assigns.post, post_params, saved_images) do
       {:ok, post} ->
         notify_parent({:saved, post})
 
@@ -73,8 +90,8 @@ defmodule AshWeb.PostLive.FormComponent do
     end
   end
 
-  defp save_post(socket, :new, post_params) do
-    case Discussions.create_post(post_params) do
+  defp save_post(socket, :new, post_params, saved_images) do
+    case Discussions.create_post(post_params, saved_images) do
       {:ok, post} ->
         notify_parent({:saved, post})
 
@@ -86,6 +103,24 @@ defmodule AshWeb.PostLive.FormComponent do
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign_form(socket, changeset)}
     end
+  end
+
+  defp save_images(socket) do
+    consume_uploaded_entries(socket, :image, fn %{path: path}, _entry ->
+      binary = File.read!(path)
+      grayscale_image = Ash.ImageProcessing.convert_to_grayscale(binary)
+      path = "user-images/#{Path.basename(path)}.png"
+
+      case S3.put_object(
+             Application.fetch_env!(:ash, :aws_s3_bucket_name),
+             path,
+             grayscale_image
+           )
+           |> ExAws.request() do
+        {:ok, _} -> {:ok, path}
+        {:error, term} -> {:postpone, term}
+      end
+    end)
   end
 
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do

@@ -21,7 +21,7 @@ defmodule AshWeb.CommentLive.FormComponent do
           id={"comment_body#{@parent_comment_id}"}
         />
         <:actions>
-          <.button phx-disable-with="Saving...">Save Comment</.button>
+          <.button phx-disable-with="Saving..." class="mb-4">Save Comment</.button>
         </:actions>
       </.simple_form>
     </div>

@@ -10,27 +10,30 @@ defmodule AshWeb.Components.CommentComponent do
     <div class="flex flex-col">
       <div class="flex flex-row text-sm">
         <.link patch={~p"/u/#{@comment.user.username}"} class="mr-1">
-          /u/<%= @comment.user.username %>
+          /u/{@comment.user.username}
         </.link>
         <p>
-          at: <%= @comment.inserted_at %>
+          at: {@comment.inserted_at}
         </p>
       </div>
       <div>
         <p>
-          <%= @comment.body %>
+          {@comment.body}
         </p>
         <div class="flex flex-row gap-2">
           <button phx-click={JS.show(to: "#reply-comment-#{@comment.id}")}>
             reply
           </button>
           <button
-            :if={@comment.reply_count > 0 && @child_comments_count != @comment.reply_count}
+            :if={
+              @comment.reply_count && @comment.reply_count > 0 &&
+                @child_comments_count != @comment.reply_count
+            }
             class="text-xs"
             phx-click="load-replies"
             value={@local_root_comment.id}
           >
-            <%= "load (#{@comment.reply_count - @child_comments_count}) replies" %>
+            {"load (#{@comment.reply_count || 0 - @child_comments_count}) replies"}
           </button>
         </div>
       </div>
