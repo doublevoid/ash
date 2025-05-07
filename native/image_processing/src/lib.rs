@@ -4,7 +4,7 @@ use std::io::{BufWriter, Cursor};
 #[rustler::nif(schedule = "DirtyCpu")]
 fn convert_to_grayscale<'a>(env: Env<'a>, binary: Binary<'a>) -> NifResult<Binary<'a>> {
     let image = image::load_from_memory(binary.as_slice()).unwrap();
-    let grayscale_image = image.grayscale();
+    let grayscale_image = image.into_luma8();
 
     let mut output_buffer = Vec::new();
 
